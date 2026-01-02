@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Ficha Gestacional</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="script"  href="./script.js">
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Ficha Gestacional</h1>
+
+    <form id="formGestacional">
+
+      <label>Nome da mamãe:</label>
+      <input type="text" id="nomeMae" required>
+
+      <label>Nome do papai:</label>
+      <input type="text" id="nomePai">
+
+      <label>Idade da mamãe:</label>
+      <input type="number" id="idadeMae" min="0">
+
+      <label>Idade gestacional (semanas):</label>
+      <input type="number" id="idadeGestacional" min="0">
+
+      <label>Data provável do parto:</label>
+      <input type="date" id="dpp">
+
+      <label>Hospital de referência:</label>
+      <input type="text" id="hospital">
+
+      <label>Endereço residencial:</label>
+      <input type="text" id="endereco">
+
+      <label>Parto desejado:</label>
+      <div class="checkbox-group">
+        <label>
+          <input type="checkbox" name="parto" value="Normal">
+          Normal
+        </label>
+        <label>
+          <input type="checkbox" name="parto" value="Cesárea">
+          Cesárea
+        </label>
+      </div>
+
+      <label>Histórico médico:</label>
+      <textarea id="historico"></textarea>
+
+      <label>Outros filhos (quantos, nomes e idades):</label>
+      <textarea id="outrosFilhos"></textarea>
+
+      <label>Nome do bebê:</label>
+      <input type="text" id="nomeBebe">
+
+      <button type="submit">Salvar ficha</button>
+
+    </form>
+  </div>
+
+  
+</body>
+</html>
+<!DOCTYPE html>
