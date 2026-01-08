@@ -19,6 +19,3 @@ const parc1 = 17
 const parc2 = 27
 
 console.log(`A soma de ${parc1} com ${parc2} é igual a ${parc1 + parc2}`)
-
-
-#imag
