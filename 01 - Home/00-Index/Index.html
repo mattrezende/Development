@@ -5,88 +5,124 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Portfólio | Desenvolvedor</title>
 
-  <!-- Fonte moderna -->
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="../00-Index/style.css">
+  <script src="../00-Index/script.js"></script>
+
 </head>
+
 <body>
 
-  <!-- HEADER -->
+  
   <header class="header">
     <div class="container">
       <h1 class="logo">Matheus Rezende<span>.</span></h1>
       <nav class="nav">
-        <a href="#sobre">Sobre</a>
-        <a href="#projetos">Projetos</a>
-        <a href="#contato">Contato</a>
+        <a id="head" href="#sobre">Sobre</a>
+        <a id="head" href="#projetos">Projetos</a>
+        <a id="head" href="../01-Preços/Preços.html">Valores</a>
+        <a id="head" href="#contato">Contato</a>
       </nav>
     </div>
   </header>
 
-  <!-- HERO -->
+ 
   <section class="hero">
+
     <div class="container">
+
+      
       <strong>
-      <h2>Programador Fullstack</h2>
+      <h2>Programador 
+      <br>
+      Fullstack</h2>
       <p>Criação de sites, sistemas web e mobile.</p>
       </strong>
       <button class="btn">Ver Projetos</button>
     </div>
+   
+    <img class="face" src="../images/meuRosto.png">
+    
+
   </section>
 
-  <!-- SOBRE -->
+  
   <section id="sobre" class="section">
     <div class="container">
-      <h3>Sobre Mim</h3>
-      <p>
-        Desenvolvedor focado em soluções eficientes, com experiência em
-        sistemas web, automação e aplicações modernas.
+      <h3>Sobre mim</h3>
+      <br>
+      <card>
+      <p>Sou programador e desenvolvo sites e sistemas pensados para gerar resultado, não apenas aparência. 
+      <br>
+      Cada projeto é criado de forma estratégica, com foco em desempenho, organização do código e experiência do usuário.
+      <br>
+      Acredito que tecnologia deve ser simples, funcional e confiável.
+      <br>
+      Por isso, trabalho com desenvolvimento personalizado, entendendo a real necessidade de cada cliente para entregar soluções práticas e duradouras.
+      <br>
+      Se você precisa de um site profissional, sistema sob medida ou automação de processos, vamos conversar.
+      <br>
+      Desenvolvedor focado em soluções eficientes, com experiência em sistemas web, automação e aplicações modernas.
       </p>
-    </div>
+      </card>
+      </div>
   </section>
 
-  <!-- PROJETOS -->
+  <section>
+    <div class="separator"></div>
+  </section>
   <section id="projetos" class="section dark">
     <div class="container">
       <h3>Projetos</h3>
 
       <div class="cards">
+
         <div class="card">
-          <h4>o Contador</h4>
-          <p>Livro Diário, Livro Razão e DRE</p>
+          <h4><strong>Catálogo de Sites</strong></h4>
+          <p>Páginas e ferramentas úteis para o dia a dia, seja no estudo ou no lazer</p>
         </div>
 
         <div class="card">
-          <h4>o Personal</h4>
-          <p>Profissionalize a sua gestão</p>
+          <h4><strong>Contabilty</strong></h4>
+          <p>Livro Diário, Livro Razão e DRE, tudo o que você precisa de forma eficiente e responsiva</p>
         </div>
 
         <div class="card">
-          <h4>Daily Doula</h4>
-          <p>Melhore o atendimento das suas doulandas de forma profissional e interativa</p>
+          <h4><strong>o Personal</strong></h4>
+          <p>Profissionalize a sua gestão com ferramentas que ajudam e guiam a sua empresa no dia a dia</p>
         </div>
+
+        <div class="card">
+          <h4><strong>Daily Doula</strong></h4>
+          <p>Organize seus atendimentos com um prontuário digital e editável que te ajuda a alcançar a excelência</p>
+        </div>
+
       </div>
     </div>
   </section>
 
-  <!-- CONTATO -->
+ 
   <section id="contato" class="section">
     <div class="container">
       <h3>Contato</h3>
+      <BR>
       <p>Email: matt.rezende@gmail.com</p>
       <p>Telefone: (61) 9.8233-2211</p>
-      <p>LinkedIn | GitHub</p>
+      <p> <a href="https://www.linkedin.com/in/matheus-rezende-970421b2/">LinkedIn</a> | <a href="https://github.com/mattrezende-stack">GitHub</a></p>
+      
+      <button id="btnWhatsapp">Solicitar minha cotação</button>
+    
     </div>
   </section>
 
-  <!-- FOOTER -->
+  
   <footer class="footer">
     <p>© 2025 - Desenvolvido por Matheus</p>
   </footer>
 
-  <script src="js/script.js"></script>
+  
 </body>
 </html>

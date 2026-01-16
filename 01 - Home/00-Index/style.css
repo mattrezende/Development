@@ -1,8 +1,8 @@
 :root {
-  --azul: #1e90ff;
-  --azul-escuro: #0a192f;
-  --cinza: #ccd6f6;
-  --branco: #ffffff;
+  --azul: #2a2a2b;
+  --preto: black;
+  --cinza: rgb(54, 54, 54);
+  --branco: white;
 }
 
 * {
@@ -13,7 +13,7 @@
 }
 
 body {
-  background: var(--azul-escuro);
+  
   color: var(--cinza);
 }
 
@@ -29,14 +29,14 @@ body {
 }
 
 .section.dark {
-  background: #020c1b;
+  background: black
 }
 
 /* Header */
 .header {
   position: fixed;
   width: 100%;
-  background: #020c1b;
+  background: black;
   backdrop-filter: blur(8px);
   z-index: 1000;
 }
@@ -46,6 +46,11 @@ body {
   justify-content: space-between;
   align-items: center;
   height: 70px;
+  
+}
+
+#head {
+  color: white;
 }
 
 .logo {
@@ -68,27 +73,39 @@ body {
   color: var(--azul);
 }
 
-/* Hero */
 .hero {
+  background-image: url(../images/fundoHero.png);
+  background-size: cover;
+  background-position: center;
   height: 100vh;
   display: flex;
   align-items: center;
-  background-image: url('./eye.jpg');
-  background-size: cover;
-  background-position: center;
+  padding-left: 20dvh;
+  padding-right: 5dvh;
 }
 
-.hero h2 {
-  font-size: 3rem;
-  color: var(--branco);
+.face {
+  height: 100dvh;
+  width:80dvh;
+  margin-top: 10dvh;
+  margin-right: 10dvh;
+  border-radius: 10px;
+  opacity: .9;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.hero h2, h1 {
+  font-size: 5rem;
+  color:white;
 }
 
 .hero p {
   margin: 20px 0;
   max-width: 500px;
+  color: white;
 }
 
-.btn {
+.btn, button{
   background: var(--azul);
   color: var(--branco);
   padding: 12px 24px;
@@ -98,11 +115,20 @@ body {
   font-weight: 600;
 }
 
-.btn:hover {
+.btn, button:hover {
   opacity: 0.9;
 }
 
-/* Cards */
+#sobre {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 20px
+}
+
+h3, h4, .card p {
+  color: white;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -110,8 +136,22 @@ body {
   margin-top: 40px;
 }
 
+.container h3{
+  font-size: 200%;
+}
+
+.separator {
+  width: 100%;
+  height: 40dvh;
+  background-image: url("./eye.jpg");
+  background-size: cover;
+  background-position: center;
+  backdrop-clip: inherit;
+  
+}
+
 .card {
-  background: #112240;
+  background: rgba(75, 75, 75, 0.8);
   padding: 25px;
   border-radius: 10px;
   transition: transform 0.3s, box-shadow 0.3s;
@@ -127,10 +167,18 @@ body {
   margin-bottom: 10px;
 }
 
-/* Footer */
+.container, .container a, .container h3{
+color: rgb(54, 54, 54);
+}
+
 .footer {
-  background: #020c1b;
+  background:black;
   text-align: center;
   padding: 20px;
   font-size: 0.9rem;
 }
+
+button{
+  margin-top: 20px;
+}
+
