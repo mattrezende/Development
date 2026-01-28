@@ -182,3 +182,83 @@ button{
   margin-top: 20px;
 }
 
+@media screen and (max-width: 600px) {
+
+  /* HEADER */
+  .header .container {
+    flex-direction: column;
+    height: auto;
+    padding: 10px 0;
+  }
+
+  .nav {
+    margin-top: 10px;
+  }
+
+  .nav a {
+    margin: 0 10px;
+    font-size: 0.9rem;
+  }
+
+  /* HERO */
+  .hero {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 20px 40px;
+    height: auto;
+  }
+
+  .hero h2 {
+    font-size: 2.8rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  /* IMAGEM */
+  .face {
+    width: 80%;
+    height: auto;
+    margin: 30px 0 0;
+  }
+
+  /* SEÇÕES */
+  .section {
+    padding: 50px 0;
+  }
+
+  #sobre {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  /* CARDS */
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  /* SEPARATOR */
+  .separator {
+    height: 20vh;
+  }
+
+  /* FOOTER */
+  .footer {
+    font-size: 0.8rem;
+  }
+
+  /* BOTÕES */
+  button, .btn {
+    width: 100%;
+    max-width: 280px;
+
+  }
+
+  #contato, #sobre {
+    flex-direction: column;
+    text-align: center;
+  }
+}

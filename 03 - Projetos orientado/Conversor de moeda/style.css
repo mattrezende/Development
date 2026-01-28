@@ -69,4 +69,9 @@
     .card {
       width: 90vw;
     }
+
+    body{
+      background-position: center;
+
+    }
   }
