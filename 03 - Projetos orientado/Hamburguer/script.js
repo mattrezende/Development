@@ -10,13 +10,15 @@ const menuOptions = [
 ]
 
 const cardsContainer = document.querySelector('ul.cards');
+let firstLy = '';
 
-cardsContainer.innerHTML = `
-        ${menuOptions.map(item => `
+menuOptions.forEach(item => {
+    firstLy +=`
             <li>
                 <img src="${item.src}" alt="${item.name}">
                 <p>${item.name}</p>
                 <span>R$ ${item.price},00</span>
             </li>
-        `).join('')}
-    `;
+    `
+})
+cardsContainer.innerHTML = firstLy;
