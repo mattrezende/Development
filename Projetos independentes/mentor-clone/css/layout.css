@@ -1,0 +1,133 @@
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  background-color: #121217;
+  border-right: 1px solid #1f1f29;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header h1 {
+  color: #8b5cf6;
+  font-size: 1.5rem;
+  margin-bottom: 32px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-menu a {
+  text-decoration: none;
+  color: #cbd5f5;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebar-menu a:hover {
+  background-color: #1f1f29;
+}
+
+.sidebar-menu a.active {
+  background-color: #8b5cf6;
+  color: #fff;
+}
+
+/* CONTENT */
+.content {
+  padding: 32px;
+}
+
+.content-header h2 {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+}
+
+.content-body {
+  background-color: #121217;
+  border-radius: 12px;
+  padding: 24px;
+  min-height: 300px;
+}
+
+/* DASHBOARD */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background-color: #18181f;
+  border: 1px solid #1f1f29;
+  border-radius: 16px;
+  padding: 24px;
+  min-height: 120px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  color: #e5e7eb;
+}
+
+.card p {
+  color: #9ca3af;
+  font-size: 0.95rem;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* RESPONSIVO */
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 80px 1fr;
+  }
+
+  .sidebar-header h1 {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .sidebar-menu a {
+    text-align: center;
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    flex-direction: row;
+    justify-content: space-around;
+    border-right: none;
+    border-bottom: 1px solid #1f1f29;
+  }
+
+  .sidebar-menu {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .content {
+    padding: 16px;
+  }
+}

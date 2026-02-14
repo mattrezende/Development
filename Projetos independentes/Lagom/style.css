@@ -1,0 +1,218 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* VARIÁVEIS */
+:root {
+    --dark-1: #0b0b0b;
+    --dark-2: #141414;
+    --gold: #d4af37;
+    --silver: #d0d0d0;
+    --muted: #9a9a9a;
+}
+
+/* BODY */
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--dark-1);
+    color: var(--silver);
+}
+
+/* HEADER */
+.header-dark {
+    background-color: #000;
+    padding: 30px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-dark h1 {
+    color: var(--gold);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 40px;
+}
+
+nav a {
+    color: var(--silver);
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+nav a:hover {
+    color: var(--gold);
+}
+
+/* HERO */
+.hero {
+    background: radial-gradient(circle at top, #1a1a1a, #000);
+    padding: 120px 20px;
+    text-align: center;
+}
+
+.hero h2 {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    color: var(--gold);
+    letter-spacing: 1px;
+}
+
+/* SEÇÕES INTERCALADAS */
+.section-dark {
+    background-color: var(--dark-1);
+    padding: 80px 60px;
+}
+
+.section-soft {
+    background-color: var(--dark-2);
+    padding: 80px 60px;
+}
+
+section h2 {
+    color: var(--gold);
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+}
+
+/* CARROSSEL HORIZONTAL */
+.carousel {
+    display: flex;
+    gap: 30px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+    scroll-snap-type: x mandatory;
+}
+
+.carousel::-webkit-scrollbar {
+    height: 6px;
+}
+
+.carousel::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 10px;
+}
+
+/* CARD */
+.card {
+    min-width: 280px;
+    background-color: #0f0f0f;
+    border: 5px solid rgba(212, 175, 55, 0.25);
+    padding: 25px;
+    margin-top: 25px;
+    border-radius: 20px;
+    text-align: center;
+    scroll-snap-align: start;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card img {
+    width: 100%;
+    margin-bottom: 20px;
+    filter: brightness(0.9);
+}
+
+.card h3 {
+    color: var(--silver);
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.card p {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* HOVER PREMIUM */
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 50px 100px rgba(212, 175, 55, 0.25);
+}
+
+/* FOOTER */
+.footer-dark {
+    background-color: #000;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+
+    /* HEADER */
+    .header-dark {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    nav ul {
+        gap: 20px;
+    }
+
+    /* HERO */
+    .hero {
+        padding: 80px 20px;
+    }
+
+    .hero h2 {
+        font-size: 2rem;
+    }
+
+    .hero p {
+        font-size: 0.9rem;
+    }
+
+    /* SEÇÕES */
+    .section-dark,
+    .section-soft {
+        padding: 60px 20px;
+    }
+
+    section h2 {
+        font-size: 1.4rem;
+        text-align: center;
+    }
+
+    /* CARROSSEL */
+    .carousel {
+        gap: 20px;
+    }
+
+    /* CARD */
+    .card {
+        min-width: 240px;
+        padding: 20px;
+        border-width: 3px;
+    }
+
+    .card h3 {
+        font-size: 1rem;
+    }
+
+    .card p {
+        font-size: 0.8rem;
+    }
+
+    /* FOOTER */
+    .footer-dark {
+        position: relative;
+    }
+}
