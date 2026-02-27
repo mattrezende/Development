@@ -1,0 +1,122 @@
+.heat-cell{
+width:14px;
+height:14px;
+background:#2a2a2a;
+margin:2px;
+border-radius:2px;
+}
+
+.level1{ background:#2ecc71 }
+.level2{ background:#27ae60 }
+.level3{ background:#145a32 }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+
+.sidebar {
+  width: 220px;
+  background: #020617;
+  padding: 20px;
+}
+
+.sidebar button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+}
+
+/* Main */
+
+#main {
+  flex: 1;
+  padding: 30px;
+  overflow: hidden;
+}
+
+/* Deck */
+
+.deck {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+/* Card */
+
+.card {
+  perspective: 1000px;
+  width: 400px;
+  height: 200px;
+  margin: 30px auto;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform .6s;
+  transform-style: preserve-3d;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background: #1e293b;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+/* Progress */
+
+.progress {
+  height: 10px;
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #22c55e;
+  border-radius: 10px;
+}
+
+/* Animations */
+
+.fade {
+  animation: fade .3s ease;
+}
+
+@keyframes fade {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.hidden {
+  display: none;
+}

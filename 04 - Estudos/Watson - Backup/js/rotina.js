@@ -64,11 +64,20 @@ function updateTotalHours() {
 /* ---------- EVENTOS ---------- */
 blocks.forEach(block => {
   // Ativar / desativar
-  block.addEventListener('click', () => {
-    block.classList.toggle('active');
-    saveRoutine();
-    updateTotalHours();
-  });
+ block.addEventListener('click', () => {
+  const label = block.querySelector('.label');
+
+  block.classList.toggle('active');
+
+  if (block.classList.contains('active')) {
+    label.textContent = 'Estudo';
+  } else {
+    label.textContent = 'Livre';
+  }
+
+  saveRoutine();
+  updateTotalHours();
+});
 
   // Editar atividade
   block.addEventListener('dblclick', () => {
@@ -81,6 +90,8 @@ blocks.forEach(block => {
     }
   });
 });
+
+
 
 /* ---------- INIT ---------- */
 loadRoutine();

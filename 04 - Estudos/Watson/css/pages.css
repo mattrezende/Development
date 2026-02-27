@@ -1,0 +1,74 @@
+/* ROTINA */
+.rotina-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 16px;
+}
+
+.day {
+  background-color: #18181f;
+  border: 1px solid #1f1f29;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.day h3 {
+  text-align: center;
+  font-size: 1rem;
+  color: #e5e7eb;
+}
+
+.time-block {
+  background-color: #121217;
+  border: 1px dashed #2a2a35;
+  border-radius: 12px;
+  padding: 10px;
+  height: 70px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: background 0.2s, border 0.2s;
+}
+
+.time-block .time {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.time-block .label {
+  font-size: 0.9rem;
+  color: #e5e7eb;
+}
+
+.time-block.active {
+  background-color: #8b5cf6;
+  border-color: #8b5cf6;
+}
+
+.time-block.active .time,
+.time-block.active .label {
+  color: #fff;
+}
+
+
+.time-block:hover {
+  background-color: #1f1f29;
+  border-color: #8b5cf6;
+}
+
+.time-block.active {
+  background-color: #8b5cf6;
+  border-color: #8b5cf6;
+}
+
+.sidebar {
+  background-color: #121217;
+  border-right: 1px solid #1f1f29;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}

@@ -37,12 +37,14 @@ function renderizar() {
     );
 
     div.innerHTML = `
+    <div class="card-cicle">
       <h3>${item.materia}</h3>
       <p>Peso: ${"★".repeat(item.peso)}</p>
       <p>Planejado: ${item.tempoPlanejado / 60} min</p>
       <p>Executado: ${Math.floor(item.tempoExecutado / 60)} min</p>
       <progress value="${item.tempoExecutado}" max="${item.tempoPlanejado}"></progress>
       <p>${progresso.toFixed(0)}%</p>
+      </div>
     `;
 
     container.appendChild(div);

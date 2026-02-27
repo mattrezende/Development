@@ -1,0 +1,345 @@
+:root{
+--bg:#121217;
+--card: #18181f;
+--text:white;
+--accent:#8b5cf6;
+}
+
+body.light{
+--bg:#a3a1a1;
+--card:rgb(36, 36, 36);
+--text:#ffffff;
+--accent: #8b5cf6;
+}
+
+body{
+margin:0;
+font-family:Arial;
+background:var(--bg);
+color:var(--text);
+display:flex;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:260px;
+height: 100vh;
+background:var(--card);
+padding:30px;
+transition:0.3s;
+position: fixed;
+}
+
+.sidebar-actions{
+margin-top:20px;
+display:flex;
+flex-direction:column;
+align-items: center;
+}
+
+#newCard {
+width:260px;
+height: 100vh;
+position: fixed;
+top:0;
+right:0;
+}
+
+
+input,select, #answer {
+width:100%;
+padding:10px;
+margin:8px 0;
+border-radius:10px;
+border:none;
+scale: none;
+}
+
+input, #answer {
+width:95%;
+}
+
+#question {
+    height: 40px;
+}
+
+#answer {
+    height: 200px;
+    width: 100%;
+}
+
+button{
+padding:15px;
+margin-top:10px;
+border:none;
+border-radius:15px;
+cursor:pointer;
+background:var(--accent);
+color:white;
+box-shadow: #fbfbfc;
+}
+
+button:hover {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+   scale: 1.1; 
+}
+
+/* MAIN */
+
+main{
+padding:20px;
+padding-right: 260px;
+margin-left: 260px;
+margin-right: 260px;
+}
+
+.ciclos {
+margin-left: 0px;
+height: 100vh;
+width: 100%;
+align-self: center;
+justify-items: center;
+}
+
+.ciclos h1 {
+justify-content: center
+}
+
+
+/* NAV */
+
+nav button{
+margin-right:10px;
+}
+
+/* CARD */
+
+.card{
+width:350px;
+height:220px;
+margin:0;
+perspective:1000px;
+cursor:pointer;
+position:relative;
+}
+.cards-row {
+    display: flex;
+    gap: 20px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding: 10px 0;
+    scroll-behavior: smooth;
+}
+
+/* impede encolher */
+.cards-row .card {
+    flex: 0 0 auto;
+    min-width: 320px;
+}
+
+/* scroll bonito */
+.cards-row::-webkit-scrollbar {
+    height: 8px;
+}
+
+.cards-row::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 10px;
+}
+.cards-row::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.card {
+    min-width: 350px;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+/* impede que os cards encolham */
+.card {
+    min-width: 300px;
+    flex: 0 0 auto;
+}
+
+.cards-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.cards-container::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+}
+
+.cards-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.card-inner{
+width:100%;
+height:100%;
+transition:0.6s;
+transform-style:preserve-3d;
+}
+
+.card.flip .card-inner{
+transform:rotateY(180deg);
+}
+
+.front,.back{
+position:absolute;
+width:100%;
+height:100%;
+backface-visibility:hidden;
+background:var(--card);
+border-radius:15px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.back{
+transform:rotateY(180deg);
+}
+
+/* EDIT ICON */
+
+.editIcon{
+position:absolute;
+top:10px;
+right:10px;
+cursor:pointer;
+font-size:18px;
+}
+
+/* DIFFICULTY */
+
+.difficulty button{
+margin:5px;
+}
+
+/* SWITCH */
+
+.switch{
+position:relative;
+display:inline-block;
+width:50px;
+height:24px;
+}
+
+.switch input{
+display:none;
+}
+
+.slider{
+position:absolute;
+cursor:pointer;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:#ccc;
+border-radius:24px;
+}
+
+.slider:before{
+position:absolute;
+content:"";
+height:18px;
+width:18px;
+left:3px;
+bottom:3px;
+background:white;
+border-radius:50%;
+transition:0.3s;
+}
+
+input:checked + .slider{
+background:#2196F3;
+}
+
+input:checked + .slider:before{
+transform:translateX(26px);
+}
+
+.hidden{
+display:none;
+}
+
+.scrollcards {
+padding: 60px 5%;
+display: flex;
+gap: 20px;
+overflow-x: auto;
+scroll-behavior: smooth;
+scroll-snap-type: x mandatory;
+}
+
+section {
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.discipline.disabled {
+  opacity: 0.0;
+  filter: grayscale(100%);
+  pointer-events: none;
+}
+.discipline {
+    margin-bottom: 40px;
+    text-align: left;
+}
+
+.cards-container {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.discipline.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.discipline h1 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: var(--gold);
+}
+
+/* Container horizontal */
+.cards-container {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+/* Scroll bonito */
+.cards-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.carousel {
+    display: flex;
+    gap: 30px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+    scroll-snap-type: x mandatory;
+}
+
+.carousel::-webkit-scrollbar {
+    height: 6px;
+}
+
+.carousel::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 10px;
+}

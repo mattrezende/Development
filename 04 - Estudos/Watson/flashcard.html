@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<title>Watson • Cards</title>
+
+<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="./css/base.css">
+<link rel="stylesheet" href="./css/layout.css">
+<link rel="stylesheet" href="./css/pages.css">
+
+</head>
+
+<body class="dark">
+
+<!-- SIDEBAR PRINCIPAL -->
+    <app-sidebar></app-sidebar>
+    <script src="./components/sidebar.js"></script>
+
+<!-- MAIN -->
+<main class="conteudo">
+
+<!-- DISCIPLINAS -->
+
+<section id="disciplineArea" class="hidden">
+
+    <div class="card">
+    <h2>Disciplinas</h2>
+    <div id="disciplines"></div>
+    </div>
+</section>
+</section>
+
+<!-- ESTUDO -->
+
+<!-- BIBLIOTECA -->
+<section id="libraryArea" class="hidden">
+
+    <div class="card">
+        <h2>Biblioteca</h2>
+        <div id="library"></div>
+    </div>
+
+</section>
+
+<section id="studyArea">
+
+    <div class="card" id="flashcard" data-id="">
+
+        <div class="editIcon" id="editBtn">✏️</div>
+
+        <div class="card-inner">
+
+            <div class="front">
+                <h1 id="cardDiscipline"></h1>
+                <p id="cardQuestion"></p>
+            </div>
+
+            <div class="back">
+                <h1 id="cardDisciplineBack"></h1>
+                <p id="cardAnswer"></p>
+
+                <div class="difficulty">
+                    <button class="diff" data-level="easy">Fácil</button>
+                    <button class="diff" data-level="medium">Médio</button>
+                    <button class="diff" data-level="hard">Difícil</button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+
+
+</main>
+
+<!-- SIDEBAR CADASTRO CARD -->
+<aside id="newCard" class="sidebar card-sidebar">
+
+    <h2>Novo Flashcard</h2>
+    <hr>
+    <br>
+
+    <label>Disciplina</label>
+
+ <!-- Select de disciplina e tema -->   
+  
+   <script src="./components/disciplina-tema-select.js"></script>
+
+<disciplina-tema-select id="estudo"></disciplina-tema-select>
+
+
+<script>
+function ver() {
+  const comp = document.getElementById("estudo");
+  console.log(comp.value);
+}
+</script>
+
+<!-- fim o select -->
+
+
+    <label>Pergunta</label>
+    <input id="question" placeholder="Pergunta">
+
+    <label>Resposta</label>
+    <textarea id="answer" placeholder="Resposta"></textarea>
+
+    <button id="addBtn">Salvar Card</button>
+    <hr>
+
+
+</aside>
+<script src="./js/flashcards.js"></script>
+</body>
+</html>

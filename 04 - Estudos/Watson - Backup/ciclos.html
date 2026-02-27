@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Watson • Ciclos de Estudo</title>
+  <link rel="stylesheet" href="./css/pages.css" />
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="./css/layout.css" />
+  <link rel="stylesheet" href="./css/style.css" />
+  
+</head>
+
+<body>
+  <div class="app">
+    <app-sidebar></app-sidebar>
+    <script src="./components/sidebar.js"></script>
+
+
+
+<main class="ciclos">
+<section class="dash-cicle">
+<h1>Ciclo de Estudos</h1>
+<br>
+<section id="ciclo-container"></section>
+</section>
+</main>
+
+<aside class="sidebar" id="input-cicle">
+
+      <script src="./components/select.js"></script>
+
+<disciplinas-select id="disciplina"></disciplinas-select>
+
+<script>
+  function pegar() {
+    const comp = document.getElementById("disciplina");
+    alert(comp.value);
+  }
+</script>
+  
+  <input id="peso" type="number" min="1" max="5" placeholder="Peso">
+  <input id="tempo" type="number" placeholder="Tempo (min)">
+  <button onclick="adicionarMateria()">Adicionar</button>
+</aside>
+
+</div>
+
+<script src="js/ciclos.js"></script>
+</body>
+</html>

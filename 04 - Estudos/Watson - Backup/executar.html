@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Watson • Executando</title>
+  <link rel="stylesheet" href="./css/pages.css" />
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="./css/layout.css" />
+  <link rel="stylesheet" href="./css/style.css" />  
+</head>
+<body>
+<div class="app">
+    <app-sidebar></app-sidebar>
+    <script src="./components/sidebar.js"></script>
+<main>
+<div class="watch">
+  <h1>Executar Estudo</h1>
+
+  <select class="execute" id="materiaSelect"></select>
+
+  <h2 id="timer">00:00</h2>
+
+  <button onclick="iniciar()">Iniciar</button>
+  <button onclick="pausar()">Pausar</button>
+  <button onclick="finalizar()">Finalizar</button>
+</div>
+
+</main>
+
+</div>
+<script src="js/timer.js"></script>
+</body>
+</html>

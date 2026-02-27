@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Caderno Digital</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <h2>📘 Caderno</h2>
+
+        <button id="newPageBtn">+ Nova Página</button>
+
+        <ul id="pagesList"></ul>
+
+    </aside>
+
+
+    <!-- EDITOR -->
+    <main class="editor">
+
+        <input id="pageTitle" placeholder="Título da página">
+
+        <textarea id="pageContent" placeholder="Escreva suas anotações aqui..."></textarea>
+
+        <div class="actions">
+            <button id="deleteBtn">Excluir Página</button>
+        </div>
+
+    </main>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

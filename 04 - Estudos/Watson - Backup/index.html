@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mentor Clone</title>
+  <title>Watson</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="./css/base.css" />
@@ -14,21 +14,19 @@
   <div class="app">
 
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h1>Mentor</h1>
-      </div>
-
-      <nav class="sidebar-menu">
-        <a href="index.html" class="active">Dashboard</a>
-        <a href="rotina.html">Rotina</a>
-        <a href="ciclos.html">Ciclos</a>
-        <a href="executar.html">Executar</a>
-      </nav>
-    </aside>
+    <app-sidebar></app-sidebar>
+    <script src="./components/sidebar.js"></script>
 
     <!-- CONTEÚDO -->
     <main class="content">
+
+    <section class="hi">
+      <h1>Olá! Eu sou o <strong>Watson</strong>, seu novo parceiro de estudos!</h1>
+
+
+
+    </section>
+    <BR>
       <header class="content-header">
         <h2>Dashboard</h2>
       </header>
@@ -55,7 +53,6 @@
     </main>
 
   </div>
-<script src="./js/sidebar.js"></script>
 
 </body>
 </html>
