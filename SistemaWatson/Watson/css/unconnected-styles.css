@@ -1,0 +1,271 @@
+/* ==================================================
+   THEME
+================================================== */
+
+:root {
+  --bg: #121217;
+  --card: #18181f;
+  --text: #ffffff;
+  --accent: #8b5cf6;
+  --border: #1f1f29;
+}
+
+body.light {
+  --bg: #ffffff;
+  --card: #f4f4f5;
+  --text: #000000;
+  --accent: #8b5cf6;
+  --border: #e5e7eb;
+}
+
+/* ==================================================
+   BASE
+================================================== */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.hidden {
+  display: none;
+}
+
+strong {
+  color: var(--accent);
+}
+
+/* ==================================================
+   LAYOUT
+================================================== */
+
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+main {
+  padding: 30px;
+  margin-left: 260px;
+}
+
+/* ==================================================
+   SIDEBAR ESQUERDA
+================================================== */
+
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  padding: 24px;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header h1 {
+  color: var(--accent);
+  font-size: 2rem;
+  margin-bottom: 30px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-menu a {
+  text-decoration: none;
+  color: #cbd5f5;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.sidebar-menu a:hover {
+  background: var(--border);
+}
+
+.sidebar-menu a.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ==================================================
+   SIDEBAR DIREITA (RETRÁTIL)
+================================================== */
+
+#newCard {
+  width: 320px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  right: -320px;
+  background: var(--card);
+  padding: 20px;
+  box-sizing: border-box;
+  transition: right 0.4s ease;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+#newCard.active {
+  right: 0;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.3s;
+  z-index: 999;
+}
+
+#overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ==================================================
+   FORM ELEMENTS
+================================================== */
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: none;
+  box-sizing: border-box;
+}
+
+#question {
+  height: 40px;
+}
+
+#answer {
+  height: 150px;
+}
+
+/* ==================================================
+   BUTTONS
+================================================== */
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* Floating Button */
+
+.fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 28px;
+  z-index: 1100;
+}
+
+/* ==================================================
+   DASHBOARD CARDS
+================================================== */
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+}
+
+/* ==================================================
+   FLASHCARD EXECUÇÃO
+================================================== */
+
+.main-exe {
+  margin-top: 5vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#flashcard {
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.card-inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+#flashcard.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.front,
+.back {
+  backface-visibility: hidden;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+/* ==================================================
+   LIBRARY / DISCIPLINES
+================================================== */
+
+.discipline {
+  margin-bottom: 40px;
+}
+
+.cards-container {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+}
+
+.discipline.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+

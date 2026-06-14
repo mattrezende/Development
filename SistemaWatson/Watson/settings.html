@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watson • Configurações</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/layout.css">
+    <link rel="stylesheet" href="./css/pages.css">
+</head>
+<body>
+
+<div class="app">
+    <app-sidebar></app-sidebar>
+    <script src="./components/sidebar.js"></script>
+
+<main class="settings">
+
+<h1>Configurações</h1>
+<form>
+    <div class="section-title">
+<br>
+
+<div class="profile-container">
+
+<h3>Perfil do Usuário</h3>
+
+<div class="avatar-wrapper">
+<img id="avatarPreview" class="avatar" src="" alt="Foto de Perfil">
+<input type="file" id="profileImage" accept="image/*">
+</div>
+<div class="study-switch">
+
+  <span class="mode-label">Grade</span>
+
+  <label class="switch">
+    <input type="checkbox" id="studyModeToggle">
+    <span class="slider"></span>
+  </label>
+
+  <span class="mode-label">Ciclo</span>
+
+</div>
+
+<label>Nome de guerra</label>
+<input type="text" id="userName" placeholder="Estudante pancadão" style="width:100%;margin:10px 0;padding:8px;">
+
+
+<button id="saveProfile">Salvar Perfil</button>
+</div>
+
+<script type="module" src="js/userProfile.js"></script>
+<br>
+<h2>Dados Pessoais</h2>
+
+
+
+    <input type="text" id="name" placeholder="Nome Completo">
+    <input type="date" id="birthdate" placeholder="Data de Nascimento">
+    <input type="number" id="cpf" placeholder="CPF">
+    <label>Gênero</label>
+    <select id="gender" name="gender">
+        <option value=" male">Masculino</option>
+        <option value=" female">Feminino</option>
+        <option value="other">Outro</option>
+    </select>
+<br><br>
+   <label for="civil-status" class="select-label">Estado Civil</label>
+    <select id="civil-status" name="civil-status">
+        <option value="single">Solteiro(a)</option>
+        <option value="married">Casado(a)</option>
+        <option value="divorced">Divorciado(a)</option>
+        <option value="widowed">Viúvo(a)</option>
+    </select>
+    <br><br>
+    <label for="school-level" class="select-label">Grau de Escolaridade</label>
+    <select id="school-level" name="school-level">
+        <option value="elementary">Ensino Fundamental</option>
+        <option value="high-school">Ensino Médio</option>
+        <option value="college">Ensino Superior</option>
+        <option value="current-student">Cursando Ensino superior</option>
+    </select>
+    
+
+    <input type="email" id="email" placeholder="Email">
+    <input type="number" id="cel" placeholder="Celular">
+<br><br>
+<h3>Endereço</h3>
+<br>
+<label>CEP</label>
+<input type="text" id="cep" maxlength="9">
+<script>
+    const cepInput = document.getElementById("cep");
+
+cepInput.addEventListener("blur", () => {
+
+let cep = cepInput.value.replace(/\D/g, "");
+
+if(cep.length !== 8) return;
+
+fetch(`https://viacep.com.br/ws/${cep}/json/`)
+.then(res => res.json())
+.then(data => {
+
+if(data.erro){
+alert("CEP não encontrado!");
+return;
+}
+
+document.getElementById("rua").value = data.logradouro;
+document.getElementById("bairro").value = data.bairro;
+document.getElementById("cidade").value = data.localidade;
+document.getElementById("estado").value = data.uf;
+
+})
+.catch(() => alert("Erro ao buscar CEP"));
+
+});
+</script>
+
+<label>Rua</label>
+<input type="text" id="rua">
+
+<label>Bairro</label>
+<input type="text" id="bairro">
+
+<label>Cidade</label>
+<input type="text" id="cidade">
+
+<label>Estado</label>
+<select id="estado" name="estado">
+        <option value="AC">Acre</option>
+        <option value="AL">Alagoas</option>
+        <option value="AP">Amapá</option>
+        <option value="AM">Amazonas</option>
+        <option value="BA">Bahia</option>
+        <option value="CE">Ceará</option>
+        <option value="DF">Distrito Federal</option>
+        <option value="ES">Espírito Santo</option>
+        <option value="GO">Goiás</option>
+        <option value="MA">Maranhão</option>
+        <option value="MT">Mato Grosso</option>
+        <option value="MS">Mato Grosso do Sul</option>
+        <option value="MG">Minas Gerais</option>
+        <option value="PA">Pará</option>
+        <option value="PB">Paraíba</option>
+        <option value="PR">Paraná</option>
+        <option value="PE">Pernambuco</option>
+        <option value="PI">Piauí</option>
+        <option value="RJ">Rio de Janeiro</option>
+        <option value="RN">Rio Grande do Norte</option>
+        <option value="RS">Rio Grande do Sul</option>
+        <option value="RO">Rondônia</option>
+        <option value="RR">Roraima</option>
+        <option value="SC">Santa Catarina</option>
+        <option value="SP">São Paulo</option>
+        <option value="SE">Sergipe</option>
+        <option value="TO">Tocantins</option>
+        <option value="EX">Estrangeiro</option>
+    </select>
+<br><br>
+<h2>Perfil de estudo</h2>
+
+<label>Objetivo Principal</label>
+<select name="goal" required>
+<option value="">Selecione</option>
+<option value="pf">Polícia Federal</option>
+<option value="prf">PRF</option>
+<option value="tribunal">Tribunais</option>
+<option value="militar">Carreira Militar</option>
+<option value="outro">Outro</option>
+</select>
+
+<label>Data da Prova</label>
+<input type="date" name="examDate">
+
+<label>Nível Atual</label>
+<select name="level" required>
+<option value="">Selecione</option>
+<option value="iniciante">Iniciante</option>
+<option value="intermediario">Intermediário</option>
+<option value="avancado">Avançado</option>
+</select>
+
+<label>Já estudou para esse concurso antes?</label>
+<select name="previousExperience">
+<option value="nao">Não</option>
+<option value="sim_sem_aprovacao">Sim, sem aprovação</option>
+<option value="sim_quase_aprovado">Sim, quase aprovado</option>
+<option value="sim_aprovado_outro">Sim, aprovado em outro</option>
+</select>
+
+<label>Você trabalha atualmente?</label>
+<select name="works">
+<option value="nao">Não</option>
+<option value="meio_periodo">Meio período</option>
+<option value="integral">Integral</option>
+</select>
+
+<br><br>
+<h3>Perfil Cognitivo</h3>
+<br>
+<label>Você aprende melhor com:</label>
+<select name="learningStyle">
+<option value="leitura">Leitura</option>
+<option value="video">Vídeo</option>
+<option value="exercicios">Exercícios</option>
+<option value="flashcards">Flashcards</option>
+<option value="misto">Método misto</option>
+</select>
+
+<label>Você revisa com frequência?</label>
+<select name="reviewFrequency">
+<option value="raramente">Raramente</option>
+<option value="as_vezes">Às vezes</option>
+<option value="frequente">Frequentemente</option>
+</select>
+
+<label>Qual sua maior dificuldade?</label>
+<textarea name="mainDifficulty" rows="3"></textarea>
+<br><br>
+<h3>Comportamento e Consistência</h3>
+<br>
+<label>Você se considera disciplinado?</label>
+<select name="disciplineLevel">
+<option value="baixo">Baixo</option>
+<option value="medio">Médio</option>
+<option value="alto">Alto</option>
+</select>
+
+<label>Costuma procrastinar?</label>
+<select name="procrastination">
+<option value="sim">Sim</option>
+<option value="as_vezes">Às vezes</option>
+<option value="nao">Não</option>
+</select>
+
+<label>Precisa de metas diárias claras?</label>
+<select name="needsDailyGoals">
+<option value="sim">Sim</option>
+<option value="nao">Não</option>
+</select>
+    </div>
+  
+ 
+
+
+    <button type="submit">Salvar</button>
+
+
+</form>
+ <app-footer></app-footer>
+ <script src="components/app-footer.js"></script>
+</main>
+    
+</body>
+</html>

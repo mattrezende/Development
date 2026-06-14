@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Watson • Ciclos de Estudo</title>
+
+<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="./css/base.css">
+<link rel="stylesheet" href="./css/layout.css">
+<link rel="stylesheet" href="./css/pages.css">
+
+</head>
+
+<body>
+
+<div class="app">
+
+<app-sidebar></app-sidebar>
+<script src="./components/sidebar.js"></script>
+
+<main class="ciclos">
+
+<section class="dash-cicle">
+<h1>Ciclo de Estudos</h1>
+<hr>
+
+<br><br>
+<h3>Matérias do ciclo</h3>
+<div id="tags-container"></div>
+
+<hr>
+
+<button id="clear-cycles" onclick="apagarCiclos()">Apagar Ciclo Atual</button>
+
+<section id="ciclo-container"></section>
+
+</section>
+
+ <app-footer></app-footer>
+ <script src="components/app-footer.js"></script>
+</main>
+
+<aside class="sidebar" id="input-cicle">
+
+<script src="./components/select.js"></script>
+
+<disciplinas-select id="disciplina"></disciplinas-select>
+
+<input id="peso" type="number" min="1" max="5" placeholder="Peso">
+
+<button onclick="adicionarMateria()">Adicionar</button>
+<button onclick="adicionarAoCicloAtual()">Salvar no Ciclo</button>
+<br>
+<hr>
+<button onclick="salvarCiclo()">Criar Ciclo</button>
+
+</aside> 
+
+</div>
+
+<script src="./js/ciclo-builder.js"></script>
+
+</body>
+</html>

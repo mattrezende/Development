@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watson • Login</title>
+<link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card" id="card">
+
+    <!-- LOGIN -->
+    <div class="form login">
+      <h1><strong>WATSON</strong></h1>
+      <h2>Entrar</h2>
+
+      <input type="email" placeholder="Email">
+      <input type="password" placeholder="Senha">
+      <button>Entrar</button>
+
+      <p>Não tem conta?
+        <span onclick="toggle()">Cadastrar</span>
+      </p>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="form register">
+      <h1>WATSON</h1>
+      <h2>Criar Conta</h2>
+
+ <input type="text" name="fullname" placeholder="Nome completo" required>
+
+  <input type="tel" name="phone" placeholder="Celular" required>
+
+  <input type="date" name="birthdate" required>
+
+  <!-- Gênero -->
+  <div>
+    <p>Gênero:</p>
+
+    <input type="radio" id="male" name="gender" value="masculino">
+    <label for="male">Masculino</label>
+
+    <input type="radio" id="female" name="gender" value="feminino">
+    <label for="female">Feminino</label>
+
+    <input type="radio" id="other" name="gender" value="outro">
+    <label for="other">Outro</label>
+  </div>
+<br>
+  <!-- Nível de ensino -->
+  <div>
+    <label for="education">Nível de ensino</label>
+    <select name="education" id="education" required>
+      <option value="">Selecione</option>
+      <option value="fundamental">Ensino Fundamental</option>
+      <option value="medio">Ensino Médio</option>
+      <option value="superior">Ensino Superior</option>
+    </select>
+  </div>
+<br>
+  <input type="text" name="username" placeholder="Usuário" required>
+
+  <input type="email" name="email" placeholder="Email" required>
+
+  <input type="password" name="password" placeholder="Senha" required>
+
+  <!-- Termos -->
+  <div>
+    <input type="checkbox" id="terms" name="terms" required>
+    <label for="terms">Aceito os termos de uso</label>
+  </div>
+
+      <button type="submit">Cadastrar</button>
+
+      <p>Já tem conta?
+        <span onclick="toggle()">Entrar</span>
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="login.js"></script>
+</body>
+</html>

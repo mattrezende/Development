@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watson • Agente de IA</title>
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/layout.css">
+    <link rel="stylesheet" href="./css/pages.css">
+    <link rel="stylesheet" href="./css/style.css">
+    </head>
+
+<body>
+    <app-sidebar></app-sidebar>
+    <script src="./components/sidebar.js"></script>
+
+    <main class="contentIa">
+        <header class="content-header">
+            <h1>Smart Watson</h1>
+        </header>
+
+        <section class="content-body-agente">
+            <p>Em breve, o Watson será promovido a agente de inteligência artificial para te ajudar a organizar seus estudos, responder dúvidas e fornecer dicas personalizadas. Fique ligado para essa novidade!</p>
+        </section>
+
+           <input id="pergunta" placeholder="Pergunte algo...">
+
+                <button onclick="enviarPergunta()">Perguntar</button>
+
+            <div id="resposta"></div>
+
+            <script src="./js/iawatson.js"></script>
+
+            <script src="./js/chat.js"></script>
+
+             <app-footer></app-footer>
+ <script src="components/app-footer.js"></script>
+    </main>
+
+    
+</body>
+</html>

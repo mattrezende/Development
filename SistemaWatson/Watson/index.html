@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watson</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./css/base.css" />
+  <link rel="stylesheet" href="./css/layout.css" />
+  <link rel="stylesheet" href="./css/pages.css" />
+  </head>
+
+<body>
+
+  <div class="app">
+
+
+    <!-- SIDEBAR -->
+    <app-sidebar></app-sidebar>
+    <script src="./components/sidebar.js"></script>
+
+    <!-- CONTEÚDO -->
+    <main class="content">
+
+        <h2>Dashboard</h2>
+
+        <div class="dashboard">
+
+                          <!-- ESTATÍSTICAS -->
+                  <div id="statsArea" class="data">
+                      
+                      <div class="card">
+                        <h2>Estatísticas</h2>
+                        <br>
+                        <div id="stats"></div>
+                      </div>
+
+                  </div>
+
+                 <!-- CALENDÁRIO -->
+                  <div id="calendarArea" class="data">
+                        <div class="card">
+                           <h2>Calendário</h2>
+                           <br>
+                            <div id="calendar"></div>
+                        </div>
+
+                    </div>
+
+       </div>
+
+       <br>
+             <section class="hi">
+                    <h1>Olá! Eu sou o <strong>Watson</strong>, seu novo parceiro de estudos!</h1>
+
+             </section>
+
+             <div id="todayCounter"></div>
+             <app-footer></app-footer>
+            </main>
+
+            
+                        
+  </div>
+<script src="./js/script.js"></script>
+<script src="components/app-footer.js"></script>
+</body>
+</html>

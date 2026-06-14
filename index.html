@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Preview de Cores</title>
+  <style>
+    :root {
+      --background: 48 20% 97%;
+      --foreground: 220 15% 20%;
+      --card: 0 0% 100%;
+      --card-foreground: 220 15% 20%;
+      --primary: 150 25% 45%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 48 30% 92%;
+      --secondary-foreground: 220 15% 20%;
+      --muted: 220 10% 95%;
+      --muted-foreground: 220 10% 45%;
+      --accent: 150 25% 92%;
+      --accent-foreground: 150 25% 25%;
+      --destructive: 0 72% 51%;
+      --destructive-foreground: 0 0% 100%;
+      --border: 220 13% 91%;
+    }
+
+    .dark {
+      --background: 220 20% 10%;
+      --foreground: 48 20% 95%;
+      --card: 220 15% 15%;
+      --card-foreground: 48 20% 95%;
+      --primary:270 60% 55%;
+      --primary-foreground: 220 20% 10%;
+      --secondary: 220 15% 20%;
+      --secondary-foreground: 48 20% 95%;
+      --muted: 220 15% 20%;
+      --muted-foreground: 220 10% 60%;
+      --accent: 150 25% 20%;
+      --accent-foreground: 150 25% 90%;
+      --destructive: 0 62% 45%;
+      --destructive-foreground: 0 0% 100%;
+      --border: 220 15% 25%;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      margin: 0;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid hsl(var(--border));
+    }
+
+    .swatch {
+      height: 80px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+  </style>
+</head>
+<body>
+
+<h1>Preview de Cores</h1>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="swatch" style="background:hsl(var(--primary))"></div>
+    <p>Primary</p>
+  </div>
+
+  <div class="card">
+    <div class="swatch" style="background:hsl(var(--secondary))"></div>
+    <p>Secondary</p>
+  </div>
+
+  <div class="card">
+    <div class="swatch" style="background:hsl(var(--accent))"></div>
+    <p>Accent</p>
+  </div>
+
+  <div class="card">
+    <div class="swatch" style="background:hsl(var(--muted))"></div>
+    <p>Muted</p>
+  </div>
+
+  <div class="card">
+    <div class="swatch" style="background:hsl(var(--destructive))"></div>
+    <p>Destructive</p>
+  </div>
+
+  <div class="card" style="background:hsl(var(--card)); color:hsl(var(--card-foreground));">
+    <p>Texto dentro de Card</p>
+  </div>
+
+</div>
+
+<button onclick="toggleTheme()">Alternar Dark Mode</button>
+
+<script>
+  function toggleTheme() {
+    document.body.classList.toggle("dark");
+  }
+</script>
+
+</body>
+</html>

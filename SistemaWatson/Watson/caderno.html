@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Watson •  Caderno Digital</title>
+<link rel="stylesheet" href="./css/base.css" />
+<link rel="stylesheet" href="./css/layout.css" />
+<link rel="stylesheet" href="./css/style.css" />
+<link rel="stylesheet" href="./css/pages.css" />
+ 
+
+</head>
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <app-sidebar></app-sidebar>
+    <script src="./components/sidebar.js"></script>
+
+         <!-- SIDEBAR -->
+    <aside class="flow-sidebar sidebar">
+
+        <h2 id="notes">Caderno <br><br>de<br><br> Anotações</h2>
+
+        <button id="newPageBtn">+ Nova Página</button>
+        <hr>
+
+        <ul id="pagesList"></ul>
+
+    </aside>
+
+    <!-- EDITOR -->
+    <main class="editor">
+
+        <input id="pageTitle" placeholder="Título da página">
+
+        <textarea id="pageContent" placeholder="Escreva suas anotações aqui..."></textarea>
+
+        <div class="actions">
+            <button id="deleteBtn">Excluir Página</button>
+        </div>
+
+      <app-footer></app-footer>
+ <script src="components/app-footer.js"></script>
+
+    </main>
+
+   
+
+
+</div>
+
+<script src="./js/caderno.js"></script>
+
+</body>
+</html>
