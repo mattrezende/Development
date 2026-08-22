@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+
+# uploads locais da API (imagens de postagens) — não devem ir pro repo
+apps/api/uploads/
