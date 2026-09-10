@@ -1,0 +1,130 @@
+# ============================================================================
+# Hostinger Reverse Proxy Configuration for Node.js API
+# ============================================================================
+# This .htaccess file configures Apache to reverse proxy requests from
+# https://exelion.com.br/hcgi/api/* to the Node.js backend running on
+# localhost:3001
+#
+# Requirements:
+#   - Apache mod_rewrite enabled
+#   - Apache mod_proxy enabled
+#   - Apache mod_proxy_http enabled
+#   - Apache mod_headers enabled
+#
+# ============================================================================
+
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Exclude real files and directories from rewriting
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Route /hcgi/api/* requests to localhost:3001
+  # The [P] flag enables proxy mode
+  # The [L] flag marks this as the last rule
+  RewriteRule ^hcgi/api/(.*)$ http://localhost:3001/hcgi/api/$1 [P,L]
+
+  # Preserve query strings in the rewrite
+  RewriteCond %{QUERY_STRING} ^(.*)$
+  RewriteRule ^hcgi/api/(.*)$ http://localhost:3001/hcgi/api/$1?%1 [P,L]
+EndIfModule
+
+# ============================================================================
+# Proxy Configuration
+# ============================================================================
+<IfModule mod_proxy.c>
+  # Disable direct proxy requests (security)
+  ProxyRequests Off
+
+  # Preserve the Host header from the original request
+  ProxyPreserveHost On
+
+  # Configure reverse proxy for /hcgi/api/ path
+  ProxyPassReverse /hcgi/api/ http://localhost:3001/hcgi/api/
+
+  # Set timeout for proxy connections (30 seconds)
+  ProxyTimeout 30
+EndIfModule
+
+# ============================================================================
+# CORS Headers Configuration
+# ============================================================================
+<IfModule mod_headers.c>
+  # Allow requests from the frontend domain
+  Header set Access-Control-Allow-Origin "https://exelion.com.br"
+
+  # Allow credentials in CORS requests
+  Header set Access-Control-Allow-Credentials "true"
+
+  # Allow common HTTP methods
+  Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+
+  # Allow common headers
+  Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+
+  # Cache CORS preflight for 1 hour
+  Header set Access-Control-Max-Age "3600"
+
+  # Security headers
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+EndIfModule
+
+# ============================================================================
+# Handle OPTIONS requests (CORS preflight)
+# ============================================================================
+<IfModule mod_rewrite.c>
+  # For OPTIONS requests, return 200 OK without proxying
+  RewriteCond %{REQUEST_METHOD} ^OPTIONS$
+  RewriteRule ^hcgi/api/(.*)$ - [L]
+EndIfModule
+
+# ============================================================================
+# WebSocket Support (if needed in future)
+# ============================================================================
+# Note: WebSocket support requires mod_proxy_wstunnel
+# Uncomment the following if WebSocket connections are needed:
+#
+# <IfModule mod_proxy_wstunnel.c>
+#   RewriteCond %{HTTP:Upgrade} websocket [NC]
+#   RewriteCond %{HTTP:Connection} upgrade [NC]
+#   RewriteRule ^hcgi/api/(.*)$ ws://localhost:3001/hcgi/api/$1 [P,L]
+# </IfModule>
+
+# ============================================================================
+# Compression
+# ============================================================================
+<IfModule mod_deflate.c>
+  # Compress text-based responses
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE application/xml
+  AddOutputFilterByType DEFLATE application/xhtml+xml
+  AddOutputFilterByType DEFLATE application/rss+xml
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE application/json
+EndIfModule
+
+# ============================================================================
+# Caching
+# ============================================================================
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # Cache API responses for 1 minute (adjust as needed)
+  ExpiresByType application/json "access plus 1 minute"
+
+  # Don't cache health check endpoints
+  <FilesMatch "health|status">
+    ExpiresActive Off
+  </FilesMatch>
+EndIfModule

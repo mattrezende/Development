@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rolador de Dados RPG</title>
+
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-image: url(./ai-generated-9536170.jpg);
+    background-size: cover;
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+  }
+
+  h1 {
+    margin-bottom: 10px;
+  }
+
+  p {
+    opacity: 0.8;
+    margin-bottom: 30px;
+  }
+
+  .dice-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 40px;
+  max-width: 900px;
+  margin: auto;
+  }
+
+  .dice {
+    background: linear-gradient(145deg, #000000, #2c323b);
+    height: 120px;
+    width: 120px;
+    align-content: center;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  }
+
+  .dice:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 25px white
+  }
+
+  .dice h2 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .result {
+    margin-top: 10px;
+    font-size: 4rem;
+    font-weight: bold;
+    color: #ffffff;
+    min-height: 40px;
+  }
+
+  footer {
+    margin-top: 40px;
+    font-size: 0.9rem;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 600px) {
+
+  body {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+
+  .dice-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .dice {
+    width: 80%;
+    height: 90px;
+    padding: 10px;
+    margin: 10px;
+  }
+
+  .dice h2 {
+    font-size: 1.1rem;
+  }
+
+  .result {
+    font-size: 2.5rem;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🎲 Rolador de Dados RPG</h1>
+<p>Clique em um dado para rolar</p>
+
+<div class="dice-container">
+  <div class="dice" onclick="rollDice(2, this), hideH2(this)">
+    <h2>D2</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(4, this), hideH2(this)">
+    <h2>D4</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(6, this), hideH2(this)">
+    <h2>D6</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(8, this), hideH2(this)">
+    <h2>D8</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(10, this), hideH2(this)">
+    <h2>D10</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(12, this), hideH2(this)">
+    <h2>D12</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(14, this), hideH2(this)">
+    <h2>D14</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(16, this), hideH2(this)">
+    <h2>D16</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(18, this), hideH2(this)">
+    <h2>D18</h2>
+    <div class="result"></div>
+  </div>
+  <div class="dice" onclick="rollDice(20, this), hideH2(this)">
+    <h2>D20</h2>
+    <div class="result"></div>
+  </div>
+</div>
+
+<footer>
+  Desenvolvido para aventuras épicas ⚔️🐉
+</footer>
+
+<script>
+
+function hideH2(element) {
+  const h2 = element.querySelector('h2');
+  h2.style.opacity = 0.2;
+}
+
+function rollDice(max, element) {
+  const resultBox = element.querySelector('.result');
+  resultBox.textContent = '...';
+
+  let rolls = 10;
+  let interval = setInterval(() => {
+    resultBox.textContent = Math.floor(Math.random() * max) + 1;
+    rolls--;
+    if (rolls === 0) {
+      clearInterval(interval);
+    }
+  }, 80)  
+}
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        :placeholder{
+            font-size: 50px;
+            font-weight: bold;
+            color: black;
+        }
+
+        input {
+            width: 50%;
+            margin: 10px;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+            height: 50%;
+            width: 20%;
+            margin:10px;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <input type="text" id="nome" placeholder="Digite o nome">
+    <input type="number" id="cpf" placeholder="Digite o CPF">
+    <input type="number" id="celular" placeholder="Digite o celular">
+    <br>
+    <button id="btn">Procurar</button>
+    
+
+    <script>   
+    const familia = [
+        { nome: "Ana", cpf: 11122233344, celular: 11999998888 },
+        { nome: "Bruno", cpf: 22233344455, celular: 11888887777 },
+        { nome: "Carla", cpf: 33344455566, celular: 11777776666 },
+        { nome: "Daniel", cpf: 44455566677, celular: 11666665555 },
+        { nome: "Eva", cpf: 55566677788, celular: 11555554444 }
+    ];
+    
+    function procurarPessoa() {
+        const nomeInput = document.getElementById('nome').value.trim().toLowerCase();
+        const cpfInput = document.getElementById('cpf').value.trim();
+        const celularInput = document.getElementById('celular').value.trim();
+    
+        const pessoaEncontrada = familia.find(pessoa => {
+            const nomeMatch = nomeInput ? pessoa.nome.toLowerCase() === nomeInput : true;
+            const cpfMatch = cpfInput ? pessoa.cpf.toString() === cpfInput : true;
+            const celularMatch = celularInput ? pessoa.celular.toString() === celularInput : true;
+            return nomeMatch && cpfMatch && celularMatch;
+        });
+    
+        if (pessoaEncontrada) {
+            alert(`Pessoa encontrada:\nNome: ${pessoaEncontrada.nome}\nCPF: ${pessoaEncontrada.cpf}\nCelular: ${pessoaEncontrada.celular}`);
+        } else {
+            alert('Pessoa não encontrada.');
+        }
+    }
+
+    addEventListener('DOMContentLoaded', () => {
+        document.getElementById('btn').addEventListener('click', procurarPessoa);
+    });
+
+
+
+    </script>
+
+</body>
+</html>

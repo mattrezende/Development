@@ -1,0 +1,145 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-work-sans);
+  --font-heading: var(--font-source-serif);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* e-bakery — creme de trigo, espresso e crosta de terracota. */
+  --background: #f4ede4;
+  --foreground: #2e2521;
+  --card: #ffffff;
+  --card-foreground: #2e2521;
+  --popover: #ffffff;
+  --popover-foreground: #2e2521;
+  --primary: #d0602e;
+  --primary-foreground: #ffffff;
+  --secondary: #ede2d1;
+  --secondary-foreground: #2e2521;
+  --muted: #ede2d1;
+  --muted-foreground: #7a716a;
+  --accent: #f7e1d0;
+  --accent-foreground: #7a3a1c;
+  --destructive: #c9432c;
+  --border: #e4d8c7;
+  --input: #e4d8c7;
+  --ring: #d0602e;
+  --success: #d9f0dd;
+  --success-foreground: #1f6b32;
+  --warning: #f0d7a8;
+  --warning-foreground: #7a4a1c;
+  --chart-1: #d0602e;
+  --chart-2: #b39b3c;
+  --chart-3: #7a716a;
+  --chart-4: #1f6b32;
+  --chart-5: #7a4a1c;
+  --radius: 0.75rem;
+  --sidebar: #3a2a20;
+  --sidebar-foreground: #d9d2c8;
+  --sidebar-primary: #d0602e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #4a3728;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2f2118;
+  --sidebar-ring: #d0602e;
+}
+
+.dark {
+  --background: #241a14;
+  --foreground: #ecdfd2;
+  --card: #2f2219;
+  --card-foreground: #ecdfd2;
+  --popover: #2f2219;
+  --popover-foreground: #ecdfd2;
+  --primary: #e07a48;
+  --primary-foreground: #241a14;
+  --secondary: #3c2d22;
+  --secondary-foreground: #ecdfd2;
+  --muted: #3c2d22;
+  --muted-foreground: #b0a294;
+  --accent: #4a3123;
+  --accent-foreground: #f3cdae;
+  --destructive: #e05f42;
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: #e07a48;
+  --success: #234a2c;
+  --success-foreground: #8fd39f;
+  --warning: #4a3714;
+  --warning-foreground: #e8bf7f;
+  --chart-1: #e07a48;
+  --chart-2: #c9b354;
+  --chart-3: #b0a294;
+  --chart-4: #8fd39f;
+  --chart-5: #e8bf7f;
+  --sidebar: #1c140f;
+  --sidebar-foreground: #d9d2c8;
+  --sidebar-primary: #e07a48;
+  --sidebar-primary-foreground: #241a14;
+  --sidebar-accent: #362720;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: #e07a48;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
