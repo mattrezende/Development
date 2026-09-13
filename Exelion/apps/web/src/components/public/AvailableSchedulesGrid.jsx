@@ -1,7 +1,7 @@
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CalendarDays, AlertCircle } from 'lucide-react';
-import { getDayOfWeekName, statusToPtBR } from '@/lib/i18n.js';
+import { statusToPtBR } from '@/lib/i18n.js';
 
 const AvailableSchedulesGrid = ({ schedules, selectedSchedules, onToggleSchedule, isRequired = false }) => {
   if (!schedules || schedules.length === 0) {
@@ -14,16 +14,11 @@ const AvailableSchedulesGrid = ({ schedules, selectedSchedules, onToggleSchedule
     );
   }
 
-  // Display order: Monday (1) to Sunday (0)
-  const daysOrder = [1, 2, 3, 4, 5, 6, 0];
+  // Display order: Monday to Sunday
+  const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  const schedulesByDay = daysOrder.reduce((acc, dayNum) => {
-    acc[dayNum] = schedules.filter(s => {
-      const sDay = typeof s.day_of_week === 'string' && isNaN(Number(s.day_of_week)) 
-        ? ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].indexOf(s.day_of_week)
-        : Number(s.day_of_week);
-      return sDay === dayNum;
-    });
+  const schedulesByDay = daysOrder.reduce((acc, day) => {
+    acc[day] = schedules.filter(s => s.dayOfWeek === day);
     return acc;
   }, {});
 
@@ -38,31 +33,30 @@ const AvailableSchedulesGrid = ({ schedules, selectedSchedules, onToggleSchedule
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {daysOrder.map(dayNum => {
-          const daySchedules = schedulesByDay[dayNum];
+        {daysOrder.map(day => {
+          const daySchedules = schedulesByDay[day];
           if (!daySchedules || daySchedules.length === 0) return null;
 
-          const dayName = getDayOfWeekName(dayNum);
-          const ptBrName = statusToPtBR[dayName] || dayName;
+          const ptBrName = statusToPtBR[day] || day;
 
           return (
-            <div key={dayNum} className={`bg-card rounded-xl border ${hasError ? 'border-destructive/50' : 'border-border'} shadow-sm overflow-hidden flex flex-col h-full transition-colors`}>
+            <div key={day} className={`bg-card rounded-xl border ${hasError ? 'border-destructive/50' : 'border-border'} shadow-sm overflow-hidden flex flex-col h-full transition-colors`}>
               <div className="bg-muted/50 px-4 py-3 border-b border-border font-semibold text-foreground text-sm uppercase tracking-wider">
                 {ptBrName}
               </div>
               <div className="p-3 space-y-2 flex-1">
                 {daySchedules.map(schedule => {
                   const isSelected = selectedSchedules.some(s => s.id === schedule.id);
-                  const isAvailable = schedule.is_active !== false && (schedule.available_slots === undefined || schedule.available_slots === null || schedule.available_slots > 0);
-                  
+                  const isAvailable = schedule.availabilityStatus === 'Disponível';
+
                   return (
-                    <label 
-                      key={schedule.id} 
+                    <label
+                      key={schedule.id}
                       className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
                         !isAvailable ? 'opacity-50 cursor-not-allowed bg-muted/20' : 'cursor-pointer'
                       } ${
-                        isSelected 
-                          ? 'bg-primary/5 border-primary ring-1 ring-primary shadow-sm' 
+                        isSelected
+                          ? 'bg-primary/5 border-primary ring-1 ring-primary shadow-sm'
                           : isAvailable ? 'bg-background border-border hover:border-primary/50 hover:bg-muted/30' : 'border-border'
                       }`}
                     >
@@ -75,7 +69,7 @@ const AvailableSchedulesGrid = ({ schedules, selectedSchedules, onToggleSchedule
                       />
                       <div className="flex-1 flex justify-between items-center">
                         <span className="font-medium text-foreground">
-                          {schedule.start_time} - {schedule.end_time}
+                          {schedule.startTime} - {schedule.endTime}
                         </span>
                         {!isAvailable && (
                           <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">

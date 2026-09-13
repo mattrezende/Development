@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import pb from '@/lib/pocketbaseClient.js';
+import apiClient from '@/lib/apiClient.js';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 
 const CategoryForm = ({ onCategoryCreated, initialData, onCancel }) => {
@@ -32,26 +32,14 @@ const CategoryForm = ({ onCategoryCreated, initialData, onCancel }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    console.log('Creating category...');
-    console.log('Teacher ID:', currentUser?.id);
-    console.log('Form data:', formData);
-
     try {
-      const dataToSave = {
-        ...formData,
-        teacher_id: currentUser.id
-      };
-
-      let response;
       if (initialData?.id) {
-        response = await pb.collection('expense_categories').update(initialData.id, dataToSave, { $autoCancel: false });
+        await apiClient.patch(`/expense-categories/${initialData.id}`, formData);
         toast.success('Category updated successfully');
       } else {
-        response = await pb.collection('expense_categories').create(dataToSave, { $autoCancel: false });
+        await apiClient.post('/expense-categories', formData);
         toast.success('Category created successfully');
       }
-
-      console.log('PocketBase response:', response);
 
       // Clear form fields after successful save
       setFormData({

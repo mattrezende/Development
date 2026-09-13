@@ -1,19 +1,17 @@
 import { useState, useCallback } from 'react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 
 export const calculateEnrollmentPrice = async (teacherId, type, quantity) => {
   if (!teacherId || !type || !quantity || quantity < 1) return null;
-  
+
   try {
-    const records = await pb.collection('pricing').getFullList({
-      filter: `teacher_id="${teacherId}" && type="${type}" && quantity=${quantity}`,
-      $autoCancel: false,
-    });
-    
-    if (records.length > 0) {
-      return records[0].price;
+    const { pricing } = await apiClient.get(`/public/teachers/${teacherId}/pricing`);
+    const match = pricing.find((p) => p.type === type && p.quantity === quantity);
+
+    if (match) {
+      return match.price;
     }
-    
+
     console.warn(`[usePriceCalculator] No pricing found for teacher ${teacherId}, type ${type}, quantity ${quantity}`);
     return null;
   } catch (error) {

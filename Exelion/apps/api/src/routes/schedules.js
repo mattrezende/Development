@@ -1,79 +1,53 @@
-import 'dotenv/config';
 import express from 'express';
-import pb from '../utils/pocketbaseClient.js';
-import logger from '../utils/logger.js';
+import { Schedule } from '../models/index.js';
+import authMiddleware from '../middleware/auth.js';
+import { createNotification } from '../services/notifications.js';
 
 const router = express.Router();
 
-/**
- * POST /schedules/migrate-schedules
- * Migrates schedules with teacher names to teacher IDs
- */
-router.post('/migrate-schedules', async (req, res) => {
-  const fixed = [];
-  const failed = [];
-  const errors = [];
+router.use(authMiddleware);
 
-  // Fetch all schedules
-  const schedules = await pb.collection('schedules').getFullList();
+router.get('/', async (req, res) => {
+	const schedules = await Schedule.find({ teacherId: req.teacher._id }).sort({ dayOfWeek: 1, startTime: 1 });
+	res.json({ schedules });
+});
 
-  logger.info(`Starting migration for ${schedules.length} schedules`);
+router.post('/', async (req, res) => {
+	const schedule = await Schedule.create({ ...req.body, teacherId: req.teacher._id });
+	res.status(201).json({ schedule });
+});
 
-  // Fetch all teachers for lookup
-  const teachers = await pb.collection('teachers').getFullList();
-  const teacherMap = new Map();
-  teachers.forEach((teacher) => {
-    teacherMap.set(teacher.name, teacher.id);
-  });
+router.patch('/:id', async (req, res) => {
+	const { teacherId, ...updates } = req.body;
 
-  logger.info(`Loaded ${teachers.length} teachers for lookup`);
+	const existing = await Schedule.findOne({ _id: req.params.id, teacherId: req.teacher._id });
+	if (!existing) return res.status(404).json({ error: 'Schedule not found' });
 
-  // Process each schedule
-  for (const schedule of schedules) {
-    const teacherId = schedule.teacher_id;
+	const wasOcupado = existing.availabilityStatus === 'Ocupado';
 
-    // Check if teacher_id is already a valid ID format (15 chars alphanumeric)
-    const isValidIdFormat = /^[a-z0-9]{15}$/.test(teacherId);
+	const schedule = await Schedule.findOneAndUpdate(
+		{ _id: req.params.id, teacherId: req.teacher._id },
+		updates,
+		{ new: true },
+	);
 
-    if (isValidIdFormat) {
-      // Already a valid ID, skip
-      logger.info(`Schedule ${schedule.id} already has valid teacher ID: ${teacherId}`);
-      fixed.push(schedule.id);
-      continue;
-    }
+	if (!wasOcupado && schedule.availabilityStatus === 'Ocupado') {
+		await createNotification(
+			req.teacher._id,
+			'schedule_booked',
+			'Horário ocupado',
+			'Um horário foi marcado como ocupado',
+			{ scheduleId: schedule._id },
+		);
+	}
 
-    // teacher_id is a name string, look up the correct ID
-    const correctTeacherId = teacherMap.get(teacherId);
+	res.json({ schedule });
+});
 
-    if (!correctTeacherId) {
-      const errorMsg = `Teacher not found for schedule ${schedule.id} with name: ${teacherId}`;
-      logger.error(errorMsg);
-      errors.push(errorMsg);
-      failed.push(schedule.id);
-      continue;
-    }
-
-    // Update schedule with correct teacher ID
-    await pb.collection('schedules').update(schedule.id, {
-      teacher_id: correctTeacherId,
-    });
-
-    logger.info(
-      `Schedule ${schedule.id} updated: ${teacherId} -> ${correctTeacherId}`
-    );
-    fixed.push(schedule.id);
-  }
-
-  logger.info(
-    `Migration complete: ${fixed.length} fixed, ${failed.length} failed`
-  );
-
-  res.json({
-    success: true,
-    fixed: fixed.length,
-    failed: failed.length,
-    errors,
-  });
+router.delete('/:id', async (req, res) => {
+	const schedule = await Schedule.findOneAndDelete({ _id: req.params.id, teacherId: req.teacher._id });
+	if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
+	res.json({ success: true });
 });
 
 export default router;

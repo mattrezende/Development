@@ -5,7 +5,7 @@ import { formatCurrency, formatDate, statusToPtBR } from '@/lib/i18n.js';
 import Header from '@/components/Header.jsx';
 import Sidebar from '@/components/Sidebar.jsx';
 import { Users, DollarSign, Calendar, Activity, ArrowUpRight, TrendingUp } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, Legend
@@ -35,34 +35,27 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const enrollments = await pb.collection('enrollments').getFullList({
-          filter: `teacher_id="${currentUser.id}"`,
-          expand: 'student_id,schedule_id',
-          sort: '-created_at',
-          $autoCancel: false,
-        });
+        const [{ enrollments }, { schedules }] = await Promise.all([
+          apiClient.get('/enrollments'),
+          apiClient.get('/schedules'),
+        ]);
 
-        const schedules = await pb.collection('schedules').getFullList({
-          filter: `teacher_id="${currentUser.id}"`,
-          $autoCancel: false,
-        });
+        const uniqueStudents = new Set(enrollments.map((e) => e.studentId?.id || e.email));
 
-        const uniqueStudents = new Set(enrollments.map((e) => e.student_id));
-        
         const monthlyRevenue = enrollments
-          .filter((e) => e.payment_status === 'approved' || e.payment_status === 'completed')
-          .reduce((sum, e) => sum + (e.amount || 0), 0);
+          .filter((e) => e.paymentStatus === 'approved')
+          .reduce((sum, e) => sum + (e.totalPrice || 0), 0);
 
-        const occupiedSchedules = schedules.filter((s) => s.availability_status === 'Ocupado' || s.availability_status === 'Reservado').length;
+        const occupiedSchedules = schedules.filter((s) => s.availabilityStatus === 'Ocupado' || s.availabilityStatus === 'Reservado').length;
         const occupancyRate = schedules.length > 0 ? (occupiedSchedules / schedules.length) * 100 : 0;
-        
+
         const newEnrollments = enrollments.filter(e => {
-          const created = new Date(e.created_at);
+          const created = new Date(e.createdAt);
           const now = new Date();
           return (now - created) / (1000 * 60 * 60 * 24) <= 7;
         }).length;
 
-        const pendingPayments = enrollments.filter(e => e.payment_status === 'pending').length;
+        const pendingPayments = enrollments.filter(e => e.paymentStatus === 'pending').length;
 
         setStats({
           totalStudents: uniqueStudents.size,
@@ -75,7 +68,7 @@ const TeacherDashboard = () => {
 
         setRecentData({
           enrollments: enrollments.slice(0, 5),
-          upcomingClasses: schedules.filter(s => s.availability_status !== 'Disponível').slice(0, 5)
+          upcomingClasses: schedules.filter(s => s.availabilityStatus !== 'Disponível').slice(0, 5)
         });
 
         const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -84,10 +77,10 @@ const TeacherDashboard = () => {
           total: Math.max(0, monthlyRevenue * (0.5 + Math.random() * 0.8))
         }));
 
-        const statusCounts = { approved: 0, pending: 0, failed: 0 };
+        const statusCounts = { approved: 0, pending: 0, rejected: 0 };
         enrollments.forEach(e => {
-          if (statusCounts[e.payment_status] !== undefined) {
-            statusCounts[e.payment_status]++;
+          if (statusCounts[e.paymentStatus] !== undefined) {
+            statusCounts[e.paymentStatus]++;
           } else {
             statusCounts.approved++;
           }
@@ -96,13 +89,13 @@ const TeacherDashboard = () => {
         const pieData = [
           { name: 'Aprovados', value: statusCounts.approved || 1, color: 'hsl(var(--success))' },
           { name: 'Pendentes', value: statusCounts.pending || 0, color: 'hsl(var(--warning))' },
-          { name: 'Falhas', value: statusCounts.failed || 0, color: 'hsl(var(--destructive))' },
+          { name: 'Falhas', value: statusCounts.rejected || 0, color: 'hsl(var(--destructive))' },
         ].filter(d => d.value > 0);
 
         const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         const dayCounts = {};
         schedules.forEach(s => {
-          dayCounts[s.day_of_week] = (dayCounts[s.day_of_week] || 0) + 1;
+          dayCounts[s.dayOfWeek] = (dayCounts[s.dayOfWeek] || 0) + 1;
         });
         
         const barData = daysOrder.map(d => ({
@@ -297,20 +290,20 @@ const TeacherDashboard = () => {
                       <div key={enrollment.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                            {enrollment.expand?.student_id?.name?.charAt(0) || 'A'}
+                            {(enrollment.studentId?.name || enrollment.firstName)?.charAt(0) || 'A'}
                           </div>
                           <div>
-                            <p className="font-medium text-sm">{enrollment.expand?.student_id?.name || 'Aluno'}</p>
-                            <p className="text-xs text-muted-foreground">{formatDate(enrollment.created_at)}</p>
+                            <p className="font-medium text-sm">{enrollment.studentId?.name || `${enrollment.firstName || ''} ${enrollment.lastName || ''}`.trim() || 'Aluno'}</p>
+                            <p className="text-xs text-muted-foreground">{formatDate(enrollment.createdAt)}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-sm">{formatCurrency(enrollment.amount)}</p>
+                          <p className="font-semibold text-sm">{formatCurrency(enrollment.totalPrice)}</p>
                           <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                            enrollment.payment_status === 'approved' || enrollment.payment_status === 'completed' ? 'bg-success/15 text-success' :
-                            enrollment.payment_status === 'pending' ? 'bg-warning/15 text-warning-foreground' : 'bg-destructive/15 text-destructive'
+                            enrollment.paymentStatus === 'approved' ? 'bg-success/15 text-success' :
+                            enrollment.paymentStatus === 'pending' ? 'bg-warning/15 text-warning-foreground' : 'bg-destructive/15 text-destructive'
                           }`}>
-                            {statusToPtBR[enrollment.payment_status] || enrollment.payment_status}
+                            {statusToPtBR[enrollment.paymentStatus] || enrollment.paymentStatus}
                           </span>
                         </div>
                       </div>
@@ -332,8 +325,8 @@ const TeacherDashboard = () => {
                             <Calendar className="w-5 h-5 text-secondary-foreground/70" />
                           </div>
                           <div>
-                            <p className="font-medium text-sm capitalize">{statusToPtBR[schedule.day_of_week] || schedule.day_of_week}</p>
-                            <p className="text-xs text-muted-foreground">{schedule.start_time} às {schedule.end_time}</p>
+                            <p className="font-medium text-sm capitalize">{statusToPtBR[schedule.dayOfWeek] || schedule.dayOfWeek}</p>
+                            <p className="text-xs text-muted-foreground">{schedule.startTime} às {schedule.endTime}</p>
                           </div>
                         </div>
                         <span className="text-xs font-medium bg-muted px-2.5 py-1 rounded-md border border-border">

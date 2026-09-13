@@ -35,7 +35,7 @@ const ExpenseTable = ({ expenses, categoriesMap, onEdit, onDelete, isLoading }) 
         </TableHeader>
         <TableBody>
           {expenses.map((expense) => {
-            const category = categoriesMap[expense.category_id];
+            const category = categoriesMap[expense.categoryId];
             return (
               <TableRow key={expense.id}>
                 <TableCell>{new Date(expense.date).toLocaleDateString('pt-BR')}</TableCell>

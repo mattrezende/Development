@@ -10,14 +10,19 @@
     "lint": "eslint . --quiet"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.0.1",
     "express-rate-limit": "^8.3.1",
     "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
     "mercadopago": "^2.0.0",
+    "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
-    "pocketbase": "^0.26.8"
+    "multer": "^2.0.1",
+    "node-cron": "^3.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

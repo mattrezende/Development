@@ -60,7 +60,7 @@ const CalendarView = ({ schedules }) => {
     const adjustedIndex = dayOfWeekIndex === 0 ? 6 : dayOfWeekIndex - 1; // 0 = Monday
     
     // Find schedules matching this day of week
-    return schedules.filter(s => dayNameMap[s.day_of_week] === adjustedIndex);
+    return schedules.filter(s => dayNameMap[s.dayOfWeek] === adjustedIndex);
   };
 
   return (
@@ -98,19 +98,19 @@ const CalendarView = ({ schedules }) => {
                     {daySchedules.map(sch => (
                       <Popover key={sch.id}>
                         <PopoverTrigger asChild>
-                          <div className={`text-xs px-2 py-1 rounded cursor-pointer truncate shadow-sm transition-transform hover:-translate-y-px ${getStatusColor(sch.availability_status)}`}>
-                            {sch.start_time}
+                          <div className={`text-xs px-2 py-1 rounded cursor-pointer truncate shadow-sm transition-transform hover:-translate-y-px ${getStatusColor(sch.availabilityStatus)}`}>
+                            {sch.startTime}
                           </div>
                         </PopoverTrigger>
                         <PopoverContent className="w-64 p-3 rounded-xl shadow-lg">
-                          <div className="font-semibold mb-1">{t(statusToPtBR[sch.day_of_week])}</div>
-                          <div className="text-sm text-muted-foreground mb-3">{sch.start_time} - {sch.end_time}</div>
+                          <div className="font-semibold mb-1">{t(statusToPtBR[sch.dayOfWeek])}</div>
+                          <div className="text-sm text-muted-foreground mb-3">{sch.startTime} - {sch.endTime}</div>
                           <div className="flex gap-2 mb-1">
                             <span className="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground">
                               {t(statusToPtBR[sch.recurrence])}
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded ${getStatusColor(sch.availability_status)}`}>
-                              {t(statusToPtBR[sch.availability_status])}
+                            <span className={`text-xs px-2 py-1 rounded ${getStatusColor(sch.availabilityStatus)}`}>
+                              {t(statusToPtBR[sch.availabilityStatus])}
                             </span>
                           </div>
                         </PopoverContent>

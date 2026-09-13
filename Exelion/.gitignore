@@ -56,9 +56,9 @@ Thumbs.db
 *.temp
 .cache/
 
-# PocketBase
-pb_data/
-pb_migrations/
+# Uploaded files (banner/profile photos, terms documents)
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
 
 # Logs
 *.log

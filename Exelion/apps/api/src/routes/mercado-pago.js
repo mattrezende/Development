@@ -1,337 +1,344 @@
-import 'dotenv/config';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import crypto from 'node:crypto';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
-import pb from '../utils/pocketbaseClient.js';
+import { Schedule, Enrollment } from '../models/index.js';
+import { createNotification } from '../services/notifications.js';
 import logger from '../utils/logger.js';
 
 const router = express.Router();
 
-// Initialize Mercado Pago client
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+	accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
 });
 
 const preference = new Preference(client);
 const payment = new Payment(client);
 
-// Rate limiting for payment endpoints
 const paymentRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requests per window
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many payment requests, please try again later' },
-  validate: { trustProxy: false },
+	windowMs: 15 * 60 * 1000,
+	max: 10,
+	standardHeaders: true,
+	legacyHeaders: false,
+	message: { error: 'Too many payment requests, please try again later' },
+	validate: { trustProxy: false },
 });
 
-// Store for idempotency (in production, use Redis or database)
+// Idempotency for webhook deliveries (Mercado Pago may deliver the same event more than once)
 const processedWebhooks = new Map();
-
-// In-process reservation timeouts with bounded size
-const reservationTimeouts = new Map();
-const MAX_RESERVATION_TIMEOUTS = 500;
-
-function storeReservationTimeout(scheduleId, timeoutId) {
-  if (reservationTimeouts.size >= MAX_RESERVATION_TIMEOUTS) {
-    const firstKey = reservationTimeouts.keys().next().value;
-    clearTimeout(reservationTimeouts.get(firstKey));
-    reservationTimeouts.delete(firstKey);
-  }
-  reservationTimeouts.set(scheduleId, timeoutId);
-}
-
-function clearReservationTimeout(scheduleId) {
-  if (reservationTimeouts.has(scheduleId)) {
-    clearTimeout(reservationTimeouts.get(scheduleId));
-    reservationTimeouts.delete(scheduleId);
-  }
-}
+const MAX_PROCESSED_WEBHOOKS = 1000;
 
 function validateWebhookSignature(req) {
-  const webhookSecret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    logger.warn('MERCADO_PAGO_WEBHOOK_SECRET not set — skipping signature validation');
-    return true;
-  }
+	const webhookSecret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
+	if (!webhookSecret) {
+		logger.warn('MERCADO_PAGO_WEBHOOK_SECRET not set — skipping signature validation');
+		return true;
+	}
 
-  const xSignature = req.headers['x-signature'];
-  const xRequestId = req.headers['x-request-id'];
-  if (!xSignature) return false;
+	const xSignature = req.headers['x-signature'];
+	const xRequestId = req.headers['x-request-id'];
+	if (!xSignature) return false;
 
-  const parts = Object.fromEntries(
-    xSignature.split(',').map((p) => p.trim().split('='))
-  );
-  const ts = parts['ts'];
-  const v1 = parts['v1'];
-  if (!ts || !v1) return false;
+	const parts = Object.fromEntries(xSignature.split(',').map((p) => p.trim().split('=')));
+	const ts = parts['ts'];
+	const v1 = parts['v1'];
+	if (!ts || !v1) return false;
 
-  const { id } = req.body;
-  const manifest = `id:${id};request-id:${xRequestId};ts:${ts};`;
-  const expected = crypto
-    .createHmac('sha256', webhookSecret)
-    .update(manifest)
-    .digest('hex');
+	const { id } = req.body;
+	const manifest = `id:${id};request-id:${xRequestId};ts:${ts};`;
+	const expected = crypto.createHmac('sha256', webhookSecret).update(manifest).digest('hex');
 
-  return crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected));
+	try {
+		return crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected));
+	} catch {
+		return false;
+	}
+}
+
+function isValidCPF(cpf) {
+	return /^\d{11}$/.test(cpf);
 }
 
 /**
  * POST /mercado-pago/create-preference
- * Creates a Mercado Pago preference for lesson enrollment payment
+ * Reserves a schedule slot, creates a pending enrollment, and creates a Mercado Pago
+ * payment preference for it. This is the single, canonical enrollment+payment flow —
+ * see routes/enrollments.js for the separate teacher-authenticated manual-enrollment path.
  */
 router.post('/create-preference', paymentRateLimit, async (req, res) => {
-  const {
-    amount,
-    studentName,
-    studentEmail,
-    studentPhone,
-    teacherName,
-    dayOfWeek,
-    startTime,
-    endTime,
-    scheduleId,
-    enrollmentId,
-  } = req.body;
+	const {
+		teacherId,
+		teacherName,
+		studentData = {},
+		enrollmentType,
+		lessonType,
+		quantity,
+		scheduleId,
+		dayOfWeek,
+		startTime,
+		endTime,
+		amount,
+		paymentMethod,
+	} = req.body;
 
-  // Input validation
-  if (
-    !amount ||
-    !studentName ||
-    !studentEmail ||
-    !studentPhone ||
-    !teacherName ||
-    !dayOfWeek ||
-    !startTime ||
-    !endTime ||
-    !scheduleId ||
-    !enrollmentId
-  ) {
-    return res.status(400).json({
-      error: 'Missing required fields: amount, studentName, studentEmail, studentPhone, teacherName, dayOfWeek, startTime, endTime, scheduleId, enrollmentId',
-    });
-  }
+	const {
+		firstName,
+		lastName,
+		email,
+		cpf,
+		documentType,
+		areaCode,
+		phoneNumber,
+		zipCode,
+		street,
+		streetNumber,
+		neighborhood,
+		city,
+		state,
+	} = studentData;
 
-  if (typeof amount !== 'number' || amount <= 0) {
-    return res.status(400).json({ error: 'Amount must be a positive number' });
-  }
+	if (
+		!teacherId ||
+		!teacherName ||
+		!firstName ||
+		!lastName ||
+		!email ||
+		!cpf ||
+		!documentType ||
+		!areaCode ||
+		!phoneNumber ||
+		!enrollmentType ||
+		!lessonType ||
+		!scheduleId ||
+		!dayOfWeek ||
+		!startTime ||
+		!endTime
+	) {
+		return res.status(400).json({ error: 'Missing required enrollment fields' });
+	}
 
-  // Atomically verify and reserve the schedule — getFirstListItem throws if not found
-  let schedule;
-  try {
-    schedule = await pb
-      .collection('schedules')
-      .getFirstListItem(`id="${scheduleId}" && availability_status="Disponível"`);
-  } catch {
-    return res.status(409).json({
-      error: 'Este horário acabou de ser preenchido. Por favor, selecione outro horário.',
-    });
-  }
+	if (!isValidCPF(cpf)) {
+		return res.status(400).json({ error: 'CPF must have 11 digits' });
+	}
 
-  await pb.collection('schedules').update(schedule.id, {
-    availability_status: 'Reservado',
-  });
+	if (!/^\d{2}$/.test(areaCode)) {
+		return res.status(400).json({ error: 'areaCode must have 2 digits' });
+	}
 
-  logger.info(`Schedule ${scheduleId} marked as reserved`);
+	if (!/^\d{8,9}$/.test(phoneNumber)) {
+		return res.status(400).json({ error: 'phoneNumber must have 8 or 9 digits' });
+	}
 
-  // Set timeout to revert reservation after 10 minutes
-  const reservationTimeout = setTimeout(async () => {
-    try {
-      const current = await pb.collection('schedules').getOne(scheduleId);
-      if (current.availability_status === 'Reservado') {
-        await pb.collection('schedules').update(scheduleId, {
-          availability_status: 'Disponível',
-        });
-        logger.info(`Schedule ${scheduleId} reservation expired, reverted to Disponível`);
-      }
-    } catch (err) {
-      logger.error(`Failed to revert reservation for schedule ${scheduleId}: ${err.message}`);
-    }
-    reservationTimeouts.delete(scheduleId);
-  }, 10 * 60 * 1000);
+	if (state && !/^[A-Z]{2}$/.test(state)) {
+		return res.status(400).json({ error: 'state must be 2 uppercase letters' });
+	}
 
-  storeReservationTimeout(scheduleId, reservationTimeout);
+	if (zipCode && !/^\d{8}$/.test(zipCode)) {
+		return res.status(400).json({ error: 'zipCode must have 8 digits' });
+	}
 
-  // Create temporary enrollment record with pending status
-  const enrollmentData = {
-    student_name: studentName,
-    student_email: studentEmail,
-    student_phone: studentPhone,
-    teacher_name: teacherName,
-    day_of_week: dayOfWeek,
-    start_time: startTime,
-    end_time: endTime,
-    schedule_id: scheduleId,
-    payment_status: 'pending',
-    payment_id: null,
-    payment_method: null,
-  };
+	if (!['avulso', 'semanal'].includes(enrollmentType)) {
+		return res.status(400).json({ error: 'enrollmentType must be avulso or semanal' });
+	}
 
-  // Update or create enrollment
-  let enrollment;
-  if (enrollmentId && enrollmentId !== 'new') {
-    enrollment = await pb.collection('enrollments').update(enrollmentId, enrollmentData);
-  } else {
-    enrollment = await pb.collection('enrollments').create(enrollmentData);
-  }
+	if (!['weekly', 'single'].includes(lessonType)) {
+		return res.status(400).json({ error: 'lessonType must be weekly or single' });
+	}
 
-  logger.info(`Enrollment ${enrollment.id} created with pending status`);
+	if (typeof amount !== 'number' || amount <= 0) {
+		return res.status(400).json({ error: 'amount must be a positive number' });
+	}
 
-  // Create Mercado Pago preference
-  const preferenceData = {
-    items: [
-      {
-        title: `Aula com ${teacherName}`,
-        description: `Aula de ${dayOfWeek} de ${startTime} a ${endTime}`,
-        unit_price: amount,
-        quantity: 1,
-        currency_id: 'BRL',
-      },
-    ],
-    payer: {
-      name: studentName,
-      email: studentEmail,
-      phone: {
-        area_code: studentPhone.substring(0, 2),
-        number: studentPhone.substring(2),
-      },
-    },
-    notification_url: `${process.env.WEBHOOK_URL || 'http://localhost:3001'}/hcgi/api/mercado-pago/webhook`,
-    back_urls: {
-      success: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/enrollment-success/${enrollment.id}`,
-      failure: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/enrollment-failed`,
-      pending: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/enrollment-pending`,
-    },
-    auto_return: 'approved',
-    external_reference: enrollment.id,
-  };
+	// Atomically reserve the schedule — fails if it's not currently available
+	const schedule = await Schedule.findOneAndUpdate(
+		{ _id: scheduleId, teacherId, availabilityStatus: 'Disponível' },
+		{ availabilityStatus: 'Reservado', reservedAt: new Date() },
+		{ new: true },
+	);
 
-  const mpPreference = await preference.create({ body: preferenceData });
+	if (!schedule) {
+		return res.status(409).json({
+			error: 'Este horário acabou de ser preenchido. Por favor, selecione outro horário.',
+		});
+	}
 
-  logger.info(
-    `Mercado Pago preference created: ${mpPreference.id} for enrollment ${enrollment.id}`
-  );
+	const qty = quantity || 1;
 
-  res.json({
-    preferenceId: mpPreference.id,
-    initPoint: mpPreference.init_point,
-    enrollmentId: enrollment.id,
-  });
+	const enrollment = await Enrollment.create({
+		teacherId,
+		scheduleId,
+		firstName,
+		lastName,
+		email,
+		cpf,
+		documentType,
+		areaCode,
+		phoneNumber,
+		zipCode,
+		street,
+		streetNumber,
+		neighborhood,
+		city,
+		state,
+		enrollmentType,
+		lessonType,
+		quantity: qty,
+		unitPrice: amount / qty,
+		totalPrice: amount,
+		paymentMethod: paymentMethod || 'pix',
+		paymentStatus: 'pending',
+	});
+
+	await createNotification(
+		teacherId,
+		'new_enrollment',
+		'Nova matrícula',
+		`${firstName} ${lastName} iniciou uma matrícula`,
+		{ enrollmentId: enrollment._id },
+	);
+
+	const mpPreference = await preference.create({
+		body: {
+			items: [
+				{
+					title: `Aula com ${teacherName}`,
+					description: `Aula de ${dayOfWeek} de ${startTime} a ${endTime}`,
+					unit_price: amount,
+					quantity: 1,
+					currency_id: 'BRL',
+				},
+			],
+			payer: {
+				name: firstName,
+				surname: lastName,
+				email,
+				phone: { area_code: areaCode, number: phoneNumber },
+			},
+			notification_url: `${process.env.WEBHOOK_URL || 'http://localhost:3001'}/api/mercado-pago/webhook`,
+			back_urls: {
+				success: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/enrollment-success/${enrollment._id}`,
+				failure: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/enrollment-failed`,
+				pending: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/enrollment-success/${enrollment._id}`,
+			},
+			auto_return: 'approved',
+			external_reference: String(enrollment._id),
+		},
+	});
+
+	enrollment.paymentId = mpPreference.id;
+	await enrollment.save();
+
+	logger.info(`Mercado Pago preference ${mpPreference.id} created for enrollment ${enrollment._id}`);
+
+	res.status(201).json({
+		enrollmentId: enrollment._id,
+		preferenceId: mpPreference.id,
+		initPoint: mpPreference.init_point,
+	});
 });
 
 /**
  * POST /mercado-pago/webhook
- * Receives payment notifications from Mercado Pago
+ * Receives payment notifications from Mercado Pago.
  */
 router.post('/webhook', async (req, res) => {
-  const { id, type, data } = req.body;
+	const { id, type, data } = req.body;
 
-  // Validate Mercado Pago signature
-  if (!validateWebhookSignature(req)) {
-    logger.warn(`Webhook signature validation failed for id=${id}`);
-    return res.status(401).json({ error: 'Invalid signature' });
-  }
+	if (!validateWebhookSignature(req)) {
+		logger.warn(`Webhook signature validation failed for id=${id}`);
+		return res.status(401).json({ error: 'Invalid signature' });
+	}
 
-  // Idempotency check
-  if (processedWebhooks.has(id)) {
-    logger.info(`Webhook ${id} already processed, returning 200`);
-    return res.status(200).json({ received: true });
-  }
+	if (processedWebhooks.has(id)) {
+		return res.status(200).json({ received: true });
+	}
 
-  // Mark webhook as processed
-  processedWebhooks.set(id, true);
+	processedWebhooks.set(id, true);
+	if (processedWebhooks.size > MAX_PROCESSED_WEBHOOKS) {
+		const firstKey = processedWebhooks.keys().next().value;
+		processedWebhooks.delete(firstKey);
+	}
 
-  // Clean up old entries (keep last 1000)
-  if (processedWebhooks.size > 1000) {
-    const firstKey = processedWebhooks.keys().next().value;
-    processedWebhooks.delete(firstKey);
-  }
+	if (type !== 'payment') {
+		return res.status(200).json({ received: true });
+	}
 
-  logger.info(`Webhook received: type=${type}, id=${id}`);
+	const paymentDetails = await payment.get({ id: data.id });
 
-  // Only process payment notifications
-  if (type !== 'payment') {
-    logger.info(`Ignoring webhook type: ${type}`);
-    return res.status(200).json({ received: true });
-  }
+	const paymentStatus = paymentDetails.status;
+	const paymentId = paymentDetails.id;
+	const externalReference = paymentDetails.external_reference;
+	const paymentMethod = paymentDetails.payment_method?.type || 'unknown';
 
-  // Retrieve payment details from Mercado Pago
-  const paymentDetails = await payment.get({ id: data.id });
+	logger.info(`Processing payment ${paymentId} (${paymentStatus}) for enrollment ${externalReference}`);
 
-  const paymentStatus = paymentDetails.status;
-  const paymentId = paymentDetails.id;
-  const externalReference = paymentDetails.external_reference;
-  const paymentMethod = paymentDetails.payment_method?.type || 'unknown';
+	let mappedStatus = 'pending';
+	if (paymentStatus === 'approved') mappedStatus = 'approved';
+	else if (paymentStatus === 'rejected' || paymentStatus === 'cancelled') mappedStatus = 'rejected';
 
-  logger.info(
-    `Processing payment ${paymentId} with status ${paymentStatus} for enrollment ${externalReference}`
-  );
+	const enrollment = await Enrollment.findByIdAndUpdate(
+		externalReference,
+		{ paymentStatus: mappedStatus, paymentId: String(paymentId), paymentMethod },
+		{ new: true },
+	);
 
-  // Map Mercado Pago status to enrollment status
-  let enrollmentStatus = 'pending';
-  if (paymentStatus === 'approved') {
-    enrollmentStatus = 'approved';
-  } else if (paymentStatus === 'pending') {
-    enrollmentStatus = 'pending';
-  } else if (paymentStatus === 'rejected' || paymentStatus === 'cancelled') {
-    enrollmentStatus = 'rejected';
-  }
+	if (!enrollment) {
+		logger.warn(`Webhook referenced unknown enrollment ${externalReference}`);
+		return res.status(200).json({ received: true });
+	}
 
-  // Update enrollment with payment details
-  const enrollment = await pb.collection('enrollments').getOne(externalReference);
-  const scheduleId = enrollment.schedule_id;
+	if (mappedStatus === 'approved' && enrollment.scheduleId) {
+		await Schedule.findByIdAndUpdate(enrollment.scheduleId, {
+			availabilityStatus: 'Ocupado',
+			reservedAt: null,
+		});
+		await createNotification(
+			enrollment.teacherId,
+			'payment_approved',
+			'Pagamento aprovado',
+			`Pagamento de ${enrollment.firstName} ${enrollment.lastName} foi aprovado`,
+			{ enrollmentId: enrollment._id },
+		);
+		await createNotification(
+			enrollment.teacherId,
+			'schedule_booked',
+			'Horário reservado',
+			'Um horário foi confirmado',
+			{ scheduleId: enrollment.scheduleId },
+		);
+	} else if (mappedStatus === 'rejected' && enrollment.scheduleId) {
+		await Schedule.findByIdAndUpdate(enrollment.scheduleId, {
+			availabilityStatus: 'Disponível',
+			reservedAt: null,
+		});
+		await createNotification(
+			enrollment.teacherId,
+			'payment_failed',
+			'Pagamento recusado',
+			`Pagamento de ${enrollment.firstName} ${enrollment.lastName} foi recusado`,
+			{ enrollmentId: enrollment._id },
+		);
+	}
 
-  await pb.collection('enrollments').update(externalReference, {
-    payment_status: enrollmentStatus,
-    payment_id: paymentId,
-    payment_method: paymentMethod,
-  });
-
-  logger.info(
-    `Enrollment ${externalReference} updated with payment status: ${enrollmentStatus}`
-  );
-
-  // If payment approved, mark schedule as occupied and clear reservation timeout
-  if (paymentStatus === 'approved') {
-    clearReservationTimeout(scheduleId);
-    await pb.collection('schedules').update(scheduleId, {
-      availability_status: 'Ocupado',
-    });
-    logger.info(`Schedule ${scheduleId} marked as Ocupado`);
-  } else if (paymentStatus === 'rejected' || paymentStatus === 'cancelled') {
-    clearReservationTimeout(scheduleId);
-    await pb.collection('schedules').update(scheduleId, {
-      availability_status: 'Disponível',
-    });
-    logger.info(`Schedule ${scheduleId} reverted to Disponível due to payment ${paymentStatus}`);
-  }
-
-  res.status(200).json({ received: true });
+	res.status(200).json({ received: true });
 });
 
 /**
  * GET /mercado-pago/payment-status/:paymentId
- * Retrieves payment details from Mercado Pago API
+ * Proxies a Mercado Pago payment lookup by its own payment id (not our enrollment id).
  */
 router.get('/payment-status/:paymentId', async (req, res) => {
-  const { paymentId } = req.params;
+	const { paymentId } = req.params;
 
-  if (!paymentId) {
-    return res.status(400).json({ error: 'Payment ID is required' });
-  }
+	const paymentDetails = await payment.get({ id: paymentId });
 
-  const paymentDetails = await payment.get({ id: paymentId });
-
-  logger.info(`Payment status retrieved for ${paymentId}: ${paymentDetails.status}`);
-
-  res.json({
-    status: paymentDetails.status,
-    paymentId: paymentDetails.id,
-    amount: paymentDetails.transaction_amount,
-    paymentMethod: paymentDetails.payment_method?.type || 'unknown',
-    createdAt: paymentDetails.date_created,
-  });
+	res.json({
+		status: paymentDetails.status,
+		paymentId: paymentDetails.id,
+		amount: paymentDetails.transaction_amount,
+		paymentMethod: paymentDetails.payment_method?.type || 'unknown',
+		createdAt: paymentDetails.date_created,
+	});
 });
 
 export default router;

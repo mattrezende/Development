@@ -27,7 +27,6 @@ import ReportsPage from './pages/ReportsPage.jsx';
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import StudentManagementPage from './pages/StudentManagementPage.jsx';
 import FinancialManagementPage from './pages/FinancialManagementPage.jsx';
-import AdminPage from './pages/AdminPage.jsx';
 
 function App() {
   return (
@@ -60,8 +59,7 @@ function App() {
                 <Route path="/service-areas" element={<ProtectedRoute><ServiceAreasPage /></ProtectedRoute>} />
                 <Route path="/pricing" element={<ProtectedRoute><PricingTablePage /></ProtectedRoute>} />
                 <Route path="/terms" element={<ProtectedRoute><TermsAndConditionsPage /></ProtectedRoute>} />
-                <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-                
+
                 <Route path="/profile" element={<Navigate to="/settings" replace />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

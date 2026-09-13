@@ -25,7 +25,7 @@ const PasswordResetPage = () => {
       setSent(true);
       toast.success('Link enviado para o email');
     } catch (error) {
-      toast.error('Falha ao enviar link');
+      toast.error(error.message || 'Redefinição de senha por email ainda não está disponível. Entre em contato com o suporte.');
     } finally {
       setLoading(false);
     }

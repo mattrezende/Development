@@ -65,8 +65,8 @@ const EnrollmentForm = ({
     }
 
     const isValid = serviceAreas.some(area => {
-      const start = parseInt(area.cep_range_start.replace(/\D/g, ''), 10);
-      const end = parseInt(area.cep_range_end.replace(/\D/g, ''), 10);
+      const start = parseInt(area.cepRangeStart.replace(/\D/g, ''), 10);
+      const end = parseInt(area.cepRangeEnd.replace(/\D/g, ''), 10);
       return cleanZipCode >= start && cleanZipCode <= end;
     });
 
@@ -171,7 +171,7 @@ const EnrollmentForm = ({
                 {selectedSchedules.map(s => (
                   <span key={s.id} className="bg-background text-sm font-medium px-3 py-1.5 rounded-lg border border-border shadow-sm flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
-                    {statusToPtBR[s.day_of_week]} • {s.start_time}
+                    {statusToPtBR[s.dayOfWeek]} • {s.startTime}
                   </span>
                 ))}
               </div>

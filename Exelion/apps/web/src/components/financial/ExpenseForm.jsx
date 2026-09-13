@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const ExpenseForm = ({ onSubmit, initialData, categories, isLoading }) => {
   const [formData, setFormData] = useState({
-    category_id: '',
+    categoryId: '',
     amount: '',
     description: '',
     date: new Date().toISOString().split('T')[0]
@@ -16,7 +16,7 @@ const ExpenseForm = ({ onSubmit, initialData, categories, isLoading }) => {
   useEffect(() => {
     if (initialData) {
       setFormData({
-        category_id: initialData.category_id || '',
+        categoryId: initialData.categoryId || '',
         amount: initialData.amount || '',
         description: initialData.description || '',
         date: initialData.date ? initialData.date.split('T')[0] : new Date().toISOString().split('T')[0]
@@ -37,8 +37,8 @@ const ExpenseForm = ({ onSubmit, initialData, categories, isLoading }) => {
       <div className="space-y-2">
         <Label htmlFor="category">Categoria</Label>
         <Select 
-          value={formData.category_id} 
-          onValueChange={(val) => setFormData({...formData, category_id: val})}
+          value={formData.categoryId} 
+          onValueChange={(val) => setFormData({...formData, categoryId: val})}
           required
         >
           <SelectTrigger>

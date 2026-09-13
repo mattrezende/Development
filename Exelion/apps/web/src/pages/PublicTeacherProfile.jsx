@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import pb from '@/lib/pocketbaseClient';
-import apiServerClient from '@/lib/apiServerClient';
+import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -49,6 +48,7 @@ const PublicTeacherProfile = () => {
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [createdEnrollmentId, setCreatedEnrollmentId] = useState(null);
+  const [paymentInitPoint, setPaymentInitPoint] = useState(null);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -78,13 +78,9 @@ const PublicTeacherProfile = () => {
       setSchedulesLoading(true);
       setSchedulesError(null);
       
-      const rawResponse = await pb.collection('schedules').getList(1, 100, {
-        filter: `teacher_id="${teacherId}" && availability_status="Disponível"`,
-        sort: 'day_of_week,start_time',
-        $autoCancel: false,
-      });
-      
-      setSchedules(rawResponse.items || []);
+      const { schedules } = await apiClient.get(`/public/teachers/${teacherId}/schedules`);
+
+      setSchedules(schedules.filter((s) => s.availabilityStatus === 'Disponível'));
     } catch (err) {
       console.error('Failed to fetch schedules:', err);
       setSchedulesError('Ocorreu um erro ao carregar os horários.');
@@ -105,24 +101,18 @@ const PublicTeacherProfile = () => {
       setLoading(true);
       setError(null);
 
-      const teacherData = await pb.collection('teachers').getOne(teacherId, { $autoCancel: false });
+      const { teacher: teacherData } = await apiClient.get(`/public/teachers/${teacherId}`);
       setTeacher(teacherData);
 
       try {
-        const areasData = await pb.collection('serviceAreas').getFullList({
-          filter: `teacher_id="${teacherId}"`,
-          $autoCancel: false,
-        });
+        const { serviceAreas: areasData } = await apiClient.get(`/public/teachers/${teacherId}/service-areas`);
         setServiceAreas(areasData);
       } catch (areaError) {
         setServiceAreas([]);
       }
 
       try {
-        const termsData = await pb.collection('termsAndConditions').getFirstListItem(
-          `teacher_id="${teacherId}"`, 
-          { $autoCancel: false }
-        );
+        const { terms: termsData } = await apiClient.get(`/public/teachers/${teacherId}/terms`);
         setTerms(termsData);
       } catch (termsError) {
         setTerms(null);
@@ -146,7 +136,7 @@ const PublicTeacherProfile = () => {
   useEffect(() => {
     const getPrice = async () => {
       if (enrollmentType === 'avulso') {
-        const singlePrice = teacher?.single_lesson_price || 0;
+        const singlePrice = teacher?.singleLessonPrice || 0;
         setTotalPrice(singlePrice > 0 ? singlePrice * quantity : 0);
         return;
       }
@@ -271,11 +261,11 @@ const PublicTeacherProfile = () => {
           firstName: formData.first_name,
           lastName: formData.last_name,
           email: formData.email,
-          cpf: formData.cpf,
+          cpf: formData.cpf.replace(/\D/g, ''),
           documentType: formData.document_type,
-          areaCode: formData.area_code,
-          phoneNumber: formData.phone_number,
-          zipCode: formData.zip_code,
+          areaCode: formData.area_code.replace(/\D/g, ''),
+          phoneNumber: formData.phone_number.replace(/\D/g, ''),
+          zipCode: formData.zip_code ? formData.zip_code.replace(/\D/g, '') : undefined,
           street: formData.street,
           streetNumber: formData.street_number,
           neighborhood: formData.neighborhood,
@@ -285,125 +275,21 @@ const PublicTeacherProfile = () => {
         lessonType: enrollmentType === 'semanal' ? 'weekly' : 'single',
         enrollmentType,
         quantity: enrollmentType === 'semanal' ? selectedSchedules.length : quantity,
-        scheduleIds: enrollmentType === 'semanal' ? selectedSchedules.map(s => s.id) : [],
         scheduleId: primarySchedule?.id || null,
-        dayOfWeek: primarySchedule?.day_of_week || null,
-        startTime: primarySchedule?.start_time || null,
-        endTime: primarySchedule?.end_time || null,
+        dayOfWeek: primarySchedule?.dayOfWeek || null,
+        startTime: primarySchedule?.startTime || null,
+        endTime: primarySchedule?.endTime || null,
         amount: Number(totalPrice),
         paymentMethod: 'pix',
-        enrollmentDate: new Date().toISOString()
       };
-      
-      console.log(`\n======================================================`);
-      console.log(`[ENROLLMENT REQUEST] Initiating at: ${new Date().toISOString()}`);
-      console.log(`[ENROLLMENT REQUEST] URL: /enrollments`);
-      console.log(`[ENROLLMENT REQUEST] Payload:\n${JSON.stringify(requestBody, null, 2)}`);
-      console.log(`======================================================\n`);
 
-      const response = await apiServerClient.fetch('/enrollments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-
-      let enrollmentResponse;
-      try {
-        enrollmentResponse = await response.json();
-      } catch (parseError) {
-        console.error('[ENROLLMENT ERROR] Failed to parse response JSON:', parseError);
-        enrollmentResponse = { error: 'O servidor retornou uma resposta inválida.' };
-      }
-
-      // ============================================
-      // COMPREHENSIVE RESPONSE LOGGING
-      // ============================================
-      console.log('\n======================================================');
-      console.log('[ENROLLMENT RESPONSE] Complete Response Object:');
-      console.log('======================================================');
-      console.log('Enrollment Response:', enrollmentResponse);
-      console.log('\n--- Payment-Related Fields ---');
-      console.log('paymentId:', enrollmentResponse.paymentId);
-      console.log('preferenceId:', enrollmentResponse.preferenceId);
-      console.log('payment_id:', enrollmentResponse.payment_id);
-      console.log('payment_status:', enrollmentResponse.payment_status);
-      console.log('amount:', enrollmentResponse.amount);
-      console.log('total_amount:', enrollmentResponse.total_amount);
-      console.log('initPoint:', enrollmentResponse.initPoint);
-      console.log('sandboxInitPoint:', enrollmentResponse.sandboxInitPoint);
-      console.log('\n--- Enrollment Fields ---');
-      console.log('enrollmentId:', enrollmentResponse.enrollmentId);
-      console.log('success:', enrollmentResponse.success);
-      console.log('message:', enrollmentResponse.message);
-      console.log('enrollmentType:', enrollmentResponse.enrollmentType);
-      console.log('lessonType:', enrollmentResponse.lessonType);
-      console.log('studentName:', enrollmentResponse.studentName);
-      console.log('studentEmail:', enrollmentResponse.studentEmail);
-      console.log('dayOfWeek:', enrollmentResponse.dayOfWeek);
-      console.log('startTime:', enrollmentResponse.startTime);
-      console.log('endTime:', enrollmentResponse.endTime);
-      console.log('\n--- Server Logs ---');
-      console.log('Total logs received:', enrollmentResponse.logs?.length || 0);
-      console.log('======================================================\n');
-
-      // Check for missing payment data
-      const missingPaymentFields = [];
-      if (!enrollmentResponse.paymentId) missingPaymentFields.push('paymentId');
-      if (!enrollmentResponse.preferenceId) missingPaymentFields.push('preferenceId');
-      if (!enrollmentResponse.payment_id) missingPaymentFields.push('payment_id');
-      if (!enrollmentResponse.payment_status) missingPaymentFields.push('payment_status');
-      if (!enrollmentResponse.initPoint) missingPaymentFields.push('initPoint');
-
-      if (missingPaymentFields.length > 0) {
-        console.warn('\n⚠️ WARNING: Missing payment fields in response:', missingPaymentFields);
-        toast.error(`Dados de pagamento incompletos: ${missingPaymentFields.join(', ')}`);
-      }
-
-      // Process and display server logs if present
-      if (enrollmentResponse && enrollmentResponse.logs && Array.isArray(enrollmentResponse.logs)) {
-        console.group('[SERVER LOGS - Enrollment Process]');
-        enrollmentResponse.logs.forEach((log, index) => {
-          const logMsg = `[${log.timestamp}] Passo ${index + 1} - ${log.step}: ${log.description || log.message || ''}`;
-          if (log.isError) {
-            console.error(logMsg, log.data ? '\nDetalhes:' : '', log.data || '');
-          } else {
-            console.log(logMsg, log.data ? '\nDetalhes:' : '', log.data || '');
-          }
-        });
-        console.groupEnd();
-      }
-
-      if (!response.ok) {
-        const errorMsg = enrollmentResponse.error || enrollmentResponse.message || `Erro no servidor (Status ${response.status})`;
-        
-        console.error(`\n======================================================`);
-        console.error(`[ENROLLMENT ERROR] Failed at: ${new Date().toISOString()}`);
-        console.error(`[ENROLLMENT ERROR] HTTP Status: ${response.status} ${response.statusText}`);
-        console.error(`[ENROLLMENT ERROR] Response Headers:`, Object.fromEntries([...response.headers.entries()]));
-        console.error(`[ENROLLMENT ERROR] Response Body:\n${JSON.stringify(enrollmentResponse, null, 2)}`);
-        console.error(`[ENROLLMENT ERROR] Request Payload that caused error:\n${JSON.stringify(requestBody, null, 2)}`);
-        console.error(`======================================================\n`);
-        
-        throw new Error(errorMsg);
-      }
-
-      console.log(`\n======================================================`);
-      console.log(`[ENROLLMENT RESPONSE] Success at: ${new Date().toISOString()}`);
-      console.log(`[ENROLLMENT RESPONSE] HTTP Status: ${response.status}`);
-      console.log(`[ENROLLMENT RESPONSE] Data:\n${JSON.stringify(enrollmentResponse, null, 2)}`);
-      console.log(`======================================================\n`);
+      const enrollmentResponse = await apiClient.post('/mercado-pago/create-preference', requestBody);
 
       setCreatedEnrollmentId(enrollmentResponse.enrollmentId);
+      setPaymentInitPoint(enrollmentResponse.initPoint);
       setPaymentModalOpen(true);
-      
+
     } catch (error) {
-      console.error(`\n======================================================`);
-      console.error(`[ENROLLMENT EXCEPTION] Caught exception during process`);
-      console.error(`[ENROLLMENT EXCEPTION] Error name: ${error.name}`);
-      console.error(`[ENROLLMENT EXCEPTION] Error message: ${error.message}`);
-      console.error(`[ENROLLMENT EXCEPTION] Stack trace:\n${error.stack}`);
-      console.error(`======================================================\n`);
-      
       toast.error(error.message || 'Falha ao criar matrícula. Verifique as informações e tente novamente.');
     } finally {
       setIsSubmitting(false);
@@ -567,6 +453,7 @@ const PublicTeacherProfile = () => {
           enrollmentType={enrollmentType}
           quantity={enrollmentType === 'avulso' ? quantity : selectedSchedules.length}
           enrollmentId={createdEnrollmentId}
+          initPoint={paymentInitPoint}
         />
       )}
     </>

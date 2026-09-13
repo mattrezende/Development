@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { FileText, Edit, Save, UploadCloud, Plus } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 
 const TermsAndConditionsPage = () => {
   const { currentUser } = useAuth();
@@ -28,15 +28,12 @@ const TermsAndConditionsPage = () => {
 
   const fetchTerms = async () => {
     try {
-      const records = await pb.collection('termsAndConditions').getList(1, 1, {
-        filter: `teacher_id="${currentUser.id}"`,
-        $autoCancel: false,
-      });
+      const { terms } = await apiClient.get('/terms');
 
-      if (records.items.length > 0) {
-        setTerms(records.items[0]);
+      if (terms) {
+        setTerms(terms);
         setFormData({
-          content_text: records.items[0].content_text || '',
+          content_text: terms.contentText || '',
         });
       }
     } catch (error) {
@@ -51,25 +48,16 @@ const TermsAndConditionsPage = () => {
     setSaving(true);
 
     try {
-      const data = new FormData();
-      data.append('content_text', formData.content_text);
-      data.append('teacher_id', currentUser.id);
+      const { terms: updated } = await apiClient.put('/terms', { contentText: formData.content_text });
+      setTerms(updated);
 
       if (documentFile) {
-        data.append('document_url', documentFile);
+        const data = new FormData();
+        data.append('file', documentFile);
+        await apiClient.patch('/terms/document', data);
       }
 
-      if (terms) {
-        await pb.collection('termsAndConditions').update(terms.id, data, { $autoCancel: false });
-        toast.success('Termos atualizados com sucesso.');
-      } else {
-        const newTerms = await pb.collection('termsAndConditions').create(data, {
-          $autoCancel: false,
-        });
-        setTerms(newTerms);
-        toast.success('Termos criados com sucesso.');
-      }
-
+      toast.success('Termos salvos com sucesso.');
       setEditing(false);
       setDocumentFile(null);
       fetchTerms();
@@ -170,16 +158,16 @@ const TermsAndConditionsPage = () => {
                         onChange={(e) => setDocumentFile(e.target.files[0])}
                         className="bg-background text-foreground cursor-pointer"
                       />
-                      {terms?.document_url && !documentFile && (
+                      {terms?.documentUrlPath && !documentFile && (
                         <div className="pt-2 flex items-center gap-2 text-sm">
                           <span className="text-muted-foreground">Documento atual:</span>
                           <a
-                            href={pb.files.getUrl(terms, terms.document_url)}
+                            href={apiClient.fileUrl(terms.documentUrlPath)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-primary hover:underline font-medium truncate max-w-[200px] sm:max-w-xs"
                           >
-                            {terms.document_url}
+                            {terms.documentUrlPath}
                           </a>
                         </div>
                       )}
@@ -194,7 +182,7 @@ const TermsAndConditionsPage = () => {
                           setEditing(false);
                           setDocumentFile(null);
                           if (terms) {
-                            setFormData({ content_text: terms.content_text || '' });
+                            setFormData({ content_text: terms.contentText || '' });
                           }
                         }}
                       >
@@ -209,10 +197,10 @@ const TermsAndConditionsPage = () => {
                 ) : (
                   <div className="space-y-8">
                     <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground/90 leading-relaxed whitespace-pre-wrap">
-                      {terms.content_text || 'Nenhum texto fornecido.'}
+                      {terms.contentText || 'Nenhum texto fornecido.'}
                     </div>
 
-                    {terms.document_url && (
+                    {terms.documentUrlPath && (
                       <div className="pt-6 border-t border-border mt-8 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/30 p-4 sm:p-5 rounded-xl gap-4">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -225,7 +213,7 @@ const TermsAndConditionsPage = () => {
                         </div>
                         <Button variant="outline" className="w-full sm:w-auto shadow-sm" asChild>
                           <a
-                            href={pb.files.getUrl(terms, terms.document_url)}
+                            href={apiClient.fileUrl(terms.documentUrlPath)}
                             target="_blank"
                             rel="noopener noreferrer"
                           >

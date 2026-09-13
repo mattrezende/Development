@@ -4,47 +4,38 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import pb from '@/lib/pocketbaseClient';
-import { useAuth } from '@/contexts/AuthContext.jsx';
+import apiClient from '@/lib/apiClient';
 import { statusToPtBR } from '@/lib/i18n';
 
 const DashboardEnrollmentForm = ({ initialData, onSuccess, onCancel }) => {
-  const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [students, setStudents] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [fetchingData, setFetchingData] = useState(true);
 
+  const idOf = (value) => (value && typeof value === 'object' ? value.id : value) || '';
+
   const [formData, setFormData] = useState({
-    student_id: '',
-    schedule_id: '',
-    enrollment_date: new Date().toISOString().split('T')[0],
+    studentId: idOf(initialData?.studentId),
+    scheduleId: idOf(initialData?.scheduleId),
+    enrollmentDate: new Date().toISOString().split('T')[0],
     status: 'active',
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [studentsRes, schedulesRes] = await Promise.all([
-          pb.collection('students').getFullList({
-            filter: `teacher_id="${currentUser.id}"`,
-            sort: 'name',
-            $autoCancel: false
-          }),
-          pb.collection('schedules').getFullList({
-            filter: `teacher_id="${currentUser.id}"`,
-            sort: 'day_of_week,start_time',
-            $autoCancel: false
-          })
+        const [{ students: studentsRes }, { schedules: schedulesRes }] = await Promise.all([
+          apiClient.get('/students'),
+          apiClient.get('/schedules'),
         ]);
-        
+
         setStudents(studentsRes);
-        
-        // If creating new, only show available schedules. If editing, show all (so they can keep current)
+
         if (initialData) {
           setSchedules(schedulesRes);
         } else {
-          setSchedules(schedulesRes.filter(s => s.availability_status === 'Disponível' || !s.availability_status));
+          setSchedules(schedulesRes.filter(s => s.availabilityStatus === 'Disponível' || !s.availabilityStatus));
         }
       } catch (error) {
         console.error('Error fetching form data:', error);
@@ -55,14 +46,14 @@ const DashboardEnrollmentForm = ({ initialData, onSuccess, onCancel }) => {
     };
 
     fetchData();
-  }, [currentUser.id, initialData]);
+  }, [initialData]);
 
   useEffect(() => {
     if (initialData) {
       setFormData({
-        student_id: initialData.student_id || '',
-        schedule_id: initialData.schedule_id || '',
-        enrollment_date: initialData.enrollment_date ? initialData.enrollment_date.split('T')[0] : new Date().toISOString().split('T')[0],
+        studentId: idOf(initialData.studentId),
+        scheduleId: idOf(initialData.scheduleId),
+        enrollmentDate: initialData.enrollmentDate ? initialData.enrollmentDate.split('T')[0] : new Date().toISOString().split('T')[0],
         status: initialData.status || 'active',
       });
     }
@@ -70,8 +61,8 @@ const DashboardEnrollmentForm = ({ initialData, onSuccess, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.student_id || !formData.schedule_id || !formData.enrollment_date) {
+
+    if (!formData.studentId || !formData.scheduleId || !formData.enrollmentDate) {
       toast.error('Por favor, preencha todos os campos obrigatórios.');
       return;
     }
@@ -79,43 +70,14 @@ const DashboardEnrollmentForm = ({ initialData, onSuccess, onCancel }) => {
     setLoading(true);
 
     try {
-      const dataToSave = {
-        ...formData,
-        teacher_id: currentUser.id,
-        enrollment_date: `${formData.enrollment_date} 12:00:00.000Z`
-      };
-
-      let savedEnrollment;
-
       if (initialData?.id) {
-        // Handle status change logic for schedule availability
-        const oldStatus = initialData.status;
-        const newStatus = formData.status;
-        
-        savedEnrollment = await pb.collection('enrollments').update(initialData.id, dataToSave, { $autoCancel: false });
-        
-        // Update schedule availability if status changed
-        if (oldStatus !== newStatus) {
-          const newAvailability = newStatus === 'active' ? 'Ocupado' : 'Disponível';
-          await pb.collection('schedules').update(formData.schedule_id, {
-            availability_status: newAvailability
-          }, { $autoCancel: false });
-        }
-        
+        await apiClient.patch(`/enrollments/${initialData.id}`, formData);
         toast.success('Matrícula atualizada com sucesso!');
       } else {
-        savedEnrollment = await pb.collection('enrollments').create(dataToSave, { $autoCancel: false });
-        
-        // Mark schedule as occupied
-        if (formData.status === 'active') {
-          await pb.collection('schedules').update(formData.schedule_id, {
-            availability_status: 'Ocupado'
-          }, { $autoCancel: false });
-        }
-        
+        await apiClient.post('/enrollments', formData);
         toast.success('Matrícula criada com sucesso!');
       }
-      
+
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error saving enrollment:', error);
@@ -132,11 +94,11 @@ const DashboardEnrollmentForm = ({ initialData, onSuccess, onCancel }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="student_id">Aluno *</Label>
-        <Select 
-          value={formData.student_id} 
-          onValueChange={(value) => setFormData({ ...formData, student_id: value })}
-          disabled={!!initialData} // Prevent changing student on edit
+        <Label htmlFor="studentId">Aluno *</Label>
+        <Select
+          value={formData.studentId}
+          onValueChange={(value) => setFormData({ ...formData, studentId: value })}
+          disabled={!!initialData}
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecione um aluno" />
@@ -155,11 +117,11 @@ const DashboardEnrollmentForm = ({ initialData, onSuccess, onCancel }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="schedule_id">Horário *</Label>
-        <Select 
-          value={formData.schedule_id} 
-          onValueChange={(value) => setFormData({ ...formData, schedule_id: value })}
-          disabled={!!initialData} // Prevent changing schedule on edit (simplify logic)
+        <Label htmlFor="scheduleId">Horário *</Label>
+        <Select
+          value={formData.scheduleId}
+          onValueChange={(value) => setFormData({ ...formData, scheduleId: value })}
+          disabled={!!initialData}
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecione um horário" />
@@ -167,7 +129,7 @@ const DashboardEnrollmentForm = ({ initialData, onSuccess, onCancel }) => {
           <SelectContent>
             {schedules.map(schedule => (
               <SelectItem key={schedule.id} value={schedule.id}>
-                {statusToPtBR[schedule.day_of_week] || schedule.day_of_week} • {schedule.start_time} - {schedule.end_time}
+                {statusToPtBR[schedule.dayOfWeek] || schedule.dayOfWeek} • {schedule.startTime} - {schedule.endTime}
               </SelectItem>
             ))}
             {schedules.length === 0 && (
@@ -178,20 +140,20 @@ const DashboardEnrollmentForm = ({ initialData, onSuccess, onCancel }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="enrollment_date">Data da Matrícula *</Label>
+        <Label htmlFor="enrollmentDate">Data da Matrícula *</Label>
         <Input
-          id="enrollment_date"
+          id="enrollmentDate"
           type="date"
           required
-          value={formData.enrollment_date}
-          onChange={(e) => setFormData({ ...formData, enrollment_date: e.target.value })}
+          value={formData.enrollmentDate}
+          onChange={(e) => setFormData({ ...formData, enrollmentDate: e.target.value })}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
-        <Select 
-          value={formData.status} 
+        <Select
+          value={formData.status}
           onValueChange={(value) => setFormData({ ...formData, status: value })}
         >
           <SelectTrigger>

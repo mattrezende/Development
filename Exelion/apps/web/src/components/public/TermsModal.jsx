@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { FileText, Download } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 
 const TermsModal = ({ open, onOpenChange, terms }) => {
   if (!terms) return null;
@@ -25,9 +25,9 @@ const TermsModal = ({ open, onOpenChange, terms }) => {
         </DialogHeader>
 
         <div className="p-6 overflow-y-auto flex-1">
-          {terms.content_text ? (
+          {terms.contentText ? (
             <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground/90 leading-relaxed whitespace-pre-wrap">
-              {terms.content_text}
+              {terms.contentText}
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
@@ -36,7 +36,7 @@ const TermsModal = ({ open, onOpenChange, terms }) => {
           )}
         </div>
 
-        {terms.document_url && (
+        {terms.documentUrlPath && (
           <div className="p-6 border-t border-border bg-muted/10 flex items-center justify-between">
             <div className="flex flex-col">
               <span className="font-semibold text-sm">Documento Anexado</span>
@@ -44,7 +44,7 @@ const TermsModal = ({ open, onOpenChange, terms }) => {
             </div>
             <Button variant="outline" size="sm" asChild className="shadow-sm">
               <a
-                href={pb.files.getUrl(terms, terms.document_url)}
+                href={apiClient.fileUrl(terms.documentUrlPath)}
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -11,21 +11,29 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { User, Save, Shield, Bell, Link as LinkIcon, Trash2, Upload, X, Instagram } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 
 const SettingsPage = () => {
-  const { currentUser, updateProfile } = useAuth();
+  const { currentUser, updateProfile, refreshCurrentUser } = useAuth();
   const { t } = useTranslation();
-  
+
   // Profile form state
   const [formData, setFormData] = useState({
-    name: '', 
-    professional_description: '', 
-    contact_phone: '', 
-    contact_email: '', 
-    base_address: '', 
+    name: '',
+    professional_description: '',
+    contact_phone: '',
+    contact_email: '',
+    base_address: '',
     base_city: '',
   });
+  const fieldMap = {
+    name: 'name',
+    professional_description: 'professionalDescription',
+    contact_phone: 'contactPhone',
+    contact_email: 'contactEmail',
+    base_address: 'baseAddress',
+    base_city: 'baseCity',
+  };
   const [profilePhotoFile, setProfilePhotoFile] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
@@ -44,16 +52,16 @@ const SettingsPage = () => {
     if (currentUser) {
       setFormData({
         name: currentUser.name || '',
-        professional_description: currentUser.professional_description || '',
-        contact_phone: currentUser.contact_phone || '',
-        contact_email: currentUser.contact_email || '',
-        base_address: currentUser.base_address || '',
-        base_city: currentUser.base_city || '',
+        professional_description: currentUser.professionalDescription || '',
+        contact_phone: currentUser.contactPhone || '',
+        contact_email: currentUser.contactEmail || '',
+        base_address: currentUser.baseAddress || '',
+        base_city: currentUser.baseCity || '',
       });
-      
-      setMpPublicKey(currentUser.mercado_pago_public_key || '');
-      setMpAccessToken(currentUser.mercado_pago_access_token || '');
-      setInstagramUsername(currentUser.instagram_username || '');
+
+      setMpPublicKey(currentUser.mercadoPagoPublicKey || '');
+      setMpAccessToken(currentUser.mercadoPagoAccessToken || '');
+      setInstagramUsername(currentUser.instagramUsername || '');
     }
   }, [currentUser]);
 
@@ -87,14 +95,26 @@ const SettingsPage = () => {
 
     setLoading(true);
     try {
-      const data = new FormData();
+      const payload = {};
       Object.keys(formData).forEach((key) => {
-        data.append(key, formData[key]);
+        payload[fieldMap[key]] = formData[key];
       });
-      if (profilePhotoFile) data.append('profile_photo', profilePhotoFile);
-      if (bannerFile) data.append('banner_image', bannerFile);
-      
-      await updateProfile(currentUser.id, data);
+      await updateProfile(currentUser.id, payload);
+
+      if (profilePhotoFile) {
+        const data = new FormData();
+        data.append('file', profilePhotoFile);
+        await apiClient.patch('/teachers/me/profile-photo', data);
+      }
+      if (bannerFile) {
+        const data = new FormData();
+        data.append('file', bannerFile);
+        await apiClient.patch('/teachers/me/banner', data);
+      }
+      if (profilePhotoFile || bannerFile) {
+        await refreshCurrentUser();
+      }
+
       toast.success('Perfil atualizado com sucesso.');
       setProfilePhotoFile(null);
       setProfilePhotoPreview(null);
@@ -114,11 +134,10 @@ const SettingsPage = () => {
 
     setIsSavingMp(true);
     try {
-      const data = new FormData();
-      data.append('mercado_pago_public_key', mpPublicKey);
-      data.append('mercado_pago_access_token', mpAccessToken);
-      
-      await updateProfile(currentUser.id, data);
+      await updateProfile(currentUser.id, {
+        mercadoPagoPublicKey: mpPublicKey,
+        mercadoPagoAccessToken: mpAccessToken,
+      });
       toast.success('Credenciais do Mercado Pago salvas com sucesso');
     } catch (error) {
       console.error(error);
@@ -139,10 +158,7 @@ const SettingsPage = () => {
         return;
       }
 
-      const data = new FormData();
-      data.append('instagram_username', cleanedUsername);
-      
-      await updateProfile(currentUser.id, data);
+      await updateProfile(currentUser.id, { instagramUsername: cleanedUsername });
       setInstagramUsername(cleanedUsername);
       
       if (cleanedUsername) {
@@ -162,9 +178,7 @@ const SettingsPage = () => {
     setInstagramUsername('');
     setIsSavingInstagram(true);
     try {
-      const data = new FormData();
-      data.append('instagram_username', '');
-      await updateProfile(currentUser.id, data);
+      await updateProfile(currentUser.id, { instagramUsername: '' });
       toast.success('Instagram removido do perfil.');
     } catch (error) {
       console.error(error);
@@ -178,14 +192,12 @@ const SettingsPage = () => {
     toast('Funcionalidade em desenvolvimento.');
   };
 
-  const currentProfilePhotoUrl = currentUser?.profile_photo 
-    ? pb.files.getUrl(currentUser, currentUser.profile_photo) 
-    : null;
+  const currentProfilePhotoUrl = apiClient.fileUrl(currentUser?.profilePhotoPath);
 
   const displayProfilePhoto = profilePhotoPreview || currentProfilePhotoUrl;
 
-  const hasMpCredentials = currentUser?.mercado_pago_public_key && currentUser?.mercado_pago_access_token;
-  const hasInstagram = !!currentUser?.instagram_username;
+  const hasMpCredentials = currentUser?.mercadoPagoPublicKey && currentUser?.mercadoPagoAccessToken;
+  const hasInstagram = !!currentUser?.instagramUsername;
 
   return (
     <>
@@ -261,8 +273,8 @@ const SettingsPage = () => {
                         <Label htmlFor="banner_image" className="text-foreground text-lg font-semibold">Banner do Perfil Público</Label>
                         <p className="text-sm text-muted-foreground">Imagem de capa que aparece no topo do seu perfil.</p>
                         <div className="flex flex-col sm:flex-row items-center gap-6 bg-muted/30 p-4 rounded-xl border border-border/50">
-                          {currentUser?.banner_image ? (
-                            <img src={pb.files.getUrl(currentUser, currentUser.banner_image)} alt="Banner" className="w-32 h-32 rounded-xl object-cover shadow-sm"/>
+                          {currentUser?.bannerImagePath ? (
+                            <img src={apiClient.fileUrl(currentUser.bannerImagePath)} alt="Banner" className="w-32 h-32 rounded-xl object-cover shadow-sm"/>
                           ) : (
                             <div className="w-32 h-32 rounded-xl bg-background border border-border flex items-center justify-center shadow-sm">
                               <User className="w-12 h-12 text-muted-foreground/50" />
@@ -334,7 +346,7 @@ const SettingsPage = () => {
                               <p className="font-semibold text-foreground">Instagram</p>
                               {hasInstagram ? (
                                 <p className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Vinculado (@{currentUser.instagram_username})
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Vinculado (@{currentUser.instagramUsername})
                                 </p>
                               ) : (
                                 <p className="text-sm text-muted-foreground flex items-center gap-1">

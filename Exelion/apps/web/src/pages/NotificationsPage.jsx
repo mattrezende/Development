@@ -5,7 +5,7 @@ import Header from '@/components/Header.jsx';
 import Sidebar from '@/components/Sidebar.jsx';
 import { Button } from '@/components/ui/button';
 import { Trash2, CheckCircle2, Circle, Bell } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 import { formatDate } from '@/lib/i18n';
 import { toast } from 'sonner';
 
@@ -16,12 +16,8 @@ const NotificationsPage = () => {
 
   const fetchNotifications = async () => {
     try {
-      const records = await pb.collection('notifications').getFullList({
-        filter: `teacher_id="${currentUser.id}"`,
-        sort: '-created',
-        $autoCancel: false
-      });
-      setNotifications(records);
+      const { notifications } = await apiClient.get('/notifications');
+      setNotifications(notifications);
     } catch (err) {
       console.error(err);
     } finally {
@@ -35,7 +31,7 @@ const NotificationsPage = () => {
 
   const toggleRead = async (id, currentStatus) => {
     try {
-      await pb.collection('notifications').update(id, { read: !currentStatus }, { $autoCancel: false });
+      await apiClient.patch(`/notifications/${id}`, { read: !currentStatus });
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !currentStatus } : n));
     } catch (err) {
       toast.error('Erro ao atualizar status.');
@@ -44,7 +40,7 @@ const NotificationsPage = () => {
 
   const deleteNotification = async (id) => {
     try {
-      await pb.collection('notifications').delete(id, { $autoCancel: false });
+      await apiClient.delete(`/notifications/${id}`);
       setNotifications(prev => prev.filter(n => n.id !== id));
       toast.success('Notificação removida.');
     } catch (err) {
@@ -55,10 +51,10 @@ const NotificationsPage = () => {
   const markAllAsRead = async () => {
     const unread = notifications.filter(n => !n.read);
     if(unread.length === 0) return;
-    
+
     try {
-      await Promise.all(unread.map(n => 
-        pb.collection('notifications').update(n.id, { read: true }, { $autoCancel: false })
+      await Promise.all(unread.map(n =>
+        apiClient.patch(`/notifications/${n.id}`, { read: true })
       ));
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       toast.success('Todas marcadas como lidas.');
@@ -114,7 +110,7 @@ const NotificationsPage = () => {
                         <div className="flex-1 min-w-0">
                           <p className={`font-medium ${!notif.read ? 'text-foreground' : 'text-foreground/80'}`}>{notif.title}</p>
                           {notif.message && <p className="text-sm text-muted-foreground mt-1">{notif.message}</p>}
-                          <p className="text-xs text-muted-foreground/60 mt-2">{formatDate(notif.created_at)}</p>
+                          <p className="text-xs text-muted-foreground/60 mt-2">{formatDate(notif.createdAt)}</p>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => deleteNotification(notif.id)} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0">
                           <Trash2 className="w-4 h-4" />

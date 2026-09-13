@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, MapPin } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 
 const ServiceAreasPage = () => {
   const { currentUser } = useAuth();
@@ -23,8 +23,8 @@ const ServiceAreasPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingArea, setEditingArea] = useState(null);
   const [formData, setFormData] = useState({
-    cep_range_start: '',
-    cep_range_end: '',
+    cepRangeStart: '',
+    cepRangeEnd: '',
   });
 
   useEffect(() => {
@@ -33,12 +33,8 @@ const ServiceAreasPage = () => {
 
   const fetchServiceAreas = async () => {
     try {
-      const records = await pb.collection('serviceAreas').getFullList({
-        filter: `teacher_id="${currentUser.id}"`,
-        sort: 'cep_range_start',
-        $autoCancel: false,
-      });
-      setServiceAreas(records);
+      const { serviceAreas } = await apiClient.get('/service-areas');
+      setServiceAreas(serviceAreas);
     } catch (error) {
       toast.error('Erro ao carregar faixas de endereço');
     } finally {
@@ -57,23 +53,22 @@ const ServiceAreasPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateCEP(formData.cep_range_start) || !validateCEP(formData.cep_range_end)) {
+    if (!validateCEP(formData.cepRangeStart) || !validateCEP(formData.cepRangeEnd)) {
       toast.error('Formato de CEP inválido. Use 00000-000.');
       return;
     }
 
     try {
       const data = {
-        cep_range_start: formatCEP(formData.cep_range_start),
-        cep_range_end: formatCEP(formData.cep_range_end),
-        teacher_id: currentUser.id,
+        cepRangeStart: formatCEP(formData.cepRangeStart),
+        cepRangeEnd: formatCEP(formData.cepRangeEnd),
       };
 
       if (editingArea) {
-        await pb.collection('serviceAreas').update(editingArea.id, data, { $autoCancel: false });
+        await apiClient.patch(`/service-areas/${editingArea.id}`, data);
         toast.success('Área atualizada com sucesso.');
       } else {
-        await pb.collection('serviceAreas').create(data, { $autoCancel: false });
+        await apiClient.post('/service-areas', data);
         toast.success('Área criada com sucesso.');
       }
 
@@ -88,8 +83,8 @@ const ServiceAreasPage = () => {
   const handleEdit = (area) => {
     setEditingArea(area);
     setFormData({
-      cep_range_start: area.cep_range_start,
-      cep_range_end: area.cep_range_end,
+      cepRangeStart: area.cepRangeStart,
+      cepRangeEnd: area.cepRangeEnd,
     });
     setDialogOpen(true);
   };
@@ -98,7 +93,7 @@ const ServiceAreasPage = () => {
     if (!window.confirm('Tem certeza que deseja excluir esta área de atendimento?')) return;
 
     try {
-      await pb.collection('serviceAreas').delete(id, { $autoCancel: false });
+      await apiClient.delete(`/service-areas/${id}`);
       toast.success('Área excluída com sucesso.');
       fetchServiceAreas();
     } catch (error) {
@@ -109,8 +104,8 @@ const ServiceAreasPage = () => {
   const resetForm = () => {
     setEditingArea(null);
     setFormData({
-      cep_range_start: '',
-      cep_range_end: '',
+      cepRangeStart: '',
+      cepRangeEnd: '',
     });
   };
 
@@ -165,26 +160,26 @@ const ServiceAreasPage = () => {
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-5 mt-4">
                     <div className="space-y-2">
-                      <Label htmlFor="cep_range_start" className="text-foreground font-medium">CEP Inicial</Label>
+                      <Label htmlFor="cepRangeStart" className="text-foreground font-medium">CEP Inicial</Label>
                       <Input
-                        id="cep_range_start"
+                        id="cepRangeStart"
                         type="text"
                         placeholder="Ex: 01000-000"
-                        value={formData.cep_range_start}
-                        onChange={(e) => setFormData({ ...formData, cep_range_start: formatCEP(e.target.value) })}
+                        value={formData.cepRangeStart}
+                        onChange={(e) => setFormData({ ...formData, cepRangeStart: formatCEP(e.target.value) })}
                         required
                         className="bg-background text-foreground font-mono text-base"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="cep_range_end" className="text-foreground font-medium">CEP Final</Label>
+                      <Label htmlFor="cepRangeEnd" className="text-foreground font-medium">CEP Final</Label>
                       <Input
-                        id="cep_range_end"
+                        id="cepRangeEnd"
                         type="text"
                         placeholder="Ex: 05999-999"
-                        value={formData.cep_range_end}
-                        onChange={(e) => setFormData({ ...formData, cep_range_end: formatCEP(e.target.value) })}
+                        value={formData.cepRangeEnd}
+                        onChange={(e) => setFormData({ ...formData, cepRangeEnd: formatCEP(e.target.value) })}
                         required
                         className="bg-background text-foreground font-mono text-base"
                       />
@@ -231,14 +226,14 @@ const ServiceAreasPage = () => {
                           <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center border-4 border-card text-xs font-bold text-secondary-foreground shadow-sm">A</div>
                           <div>
                             <p className="text-xs text-muted-foreground font-medium mb-0.5 uppercase tracking-wider">CEP Inicial</p>
-                            <div className="font-mono text-base font-medium text-foreground">{area.cep_range_start}</div>
+                            <div className="font-mono text-base font-medium text-foreground">{area.cepRangeStart}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-4 relative z-10">
                           <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center border-4 border-card text-xs font-bold text-secondary-foreground shadow-sm">B</div>
                           <div>
                             <p className="text-xs text-muted-foreground font-medium mb-0.5 uppercase tracking-wider">CEP Final</p>
-                            <div className="font-mono text-base font-medium text-foreground">{area.cep_range_end}</div>
+                            <div className="font-mono text-base font-medium text-foreground">{area.cepRangeEnd}</div>
                           </div>
                         </div>
                       </div>

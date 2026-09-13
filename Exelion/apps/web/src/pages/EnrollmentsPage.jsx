@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Users, Plus, Edit2, Trash2, Calendar, Clock } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 import DashboardEnrollmentForm from '@/components/DashboardEnrollmentForm.jsx';
 
 const EnrollmentsPage = () => {
@@ -28,13 +28,8 @@ const EnrollmentsPage = () => {
   const fetchEnrollments = async () => {
     setLoading(true);
     try {
-      const records = await pb.collection('enrollments').getFullList({
-        filter: `teacher_id="${currentUser.id}"`,
-        expand: 'student_id,schedule_id',
-        sort: '-created_at',
-        $autoCancel: false,
-      });
-      setEnrollments(records);
+      const { enrollments } = await apiClient.get('/enrollments');
+      setEnrollments(enrollments);
     } catch (error) {
       console.error(error);
       toast.error('Falha ao carregar matrículas');
@@ -66,14 +61,7 @@ const EnrollmentsPage = () => {
     if (!enrollmentToDelete) return;
     
     try {
-      // If deleting an active enrollment, free up the schedule
-      if (enrollmentToDelete.status === 'active' && enrollmentToDelete.schedule_id) {
-        await pb.collection('schedules').update(enrollmentToDelete.schedule_id, {
-          availability_status: 'Disponível'
-        }, { $autoCancel: false });
-      }
-
-      await pb.collection('enrollments').delete(enrollmentToDelete.id, { $autoCancel: false });
+      await apiClient.delete(`/enrollments/${enrollmentToDelete.id}`);
       toast.success('Matrícula excluída com sucesso.');
       fetchEnrollments();
     } catch (error) {
@@ -151,7 +139,7 @@ const EnrollmentsPage = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-bold text-lg text-foreground">
-                              {enrollment.expand?.student_id?.name || 'Aluno Desconhecido'}
+                              {enrollment.studentId?.name || `${enrollment.firstName || ''} ${enrollment.lastName || ''}`.trim() || 'Aluno Desconhecido'}
                             </h3>
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
                               enrollment.status === 'active' 
@@ -165,9 +153,9 @@ const EnrollmentsPage = () => {
                           <div className="space-y-2 mt-3">
                             <div className="flex items-center text-sm text-muted-foreground">
                               <Clock className="w-4 h-4 mr-2 text-primary/70" />
-                              {enrollment.expand?.schedule_id ? (
+                              {enrollment.scheduleId?.dayOfWeek ? (
                                 <span>
-                                  {statusToPtBR[enrollment.expand.schedule_id.day_of_week] || enrollment.expand.schedule_id.day_of_week}, {enrollment.expand.schedule_id.start_time} - {enrollment.expand.schedule_id.end_time}
+                                  {statusToPtBR[enrollment.scheduleId.dayOfWeek] || enrollment.scheduleId.dayOfWeek}, {enrollment.scheduleId.startTime} - {enrollment.scheduleId.endTime}
                                 </span>
                               ) : (
                                 'Horário não definido'
@@ -175,7 +163,7 @@ const EnrollmentsPage = () => {
                             </div>
                             <div className="flex items-center text-sm text-muted-foreground">
                               <Calendar className="w-4 h-4 mr-2 text-primary/70" />
-                              <span>Matriculado em: {enrollment.enrollment_date ? formatDate(enrollment.enrollment_date) : formatDate(enrollment.created_at)}</span>
+                              <span>Matriculado em: {enrollment.enrollmentDate ? formatDate(enrollment.enrollmentDate) : formatDate(enrollment.createdAt)}</span>
                             </div>
                           </div>
                         </div>

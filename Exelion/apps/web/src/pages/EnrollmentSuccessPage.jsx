@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 import { formatCurrency, statusToPtBR } from '@/lib/i18n';
 import { CheckCircle2, Calendar, User, CreditCard, ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,8 @@ const EnrollmentSuccessPage = () => {
   useEffect(() => {
     const fetchEnrollment = async () => {
       try {
-        const record = await pb.collection('enrollments').getOne(enrollmentId, {
-          expand: 'teacher_id,student_id,schedule_id',
-          $autoCancel: false
-        });
-        setEnrollment(record);
+        const { enrollment } = await apiClient.get(`/public/enrollments/${enrollmentId}`);
+        setEnrollment(enrollment);
       } catch (err) {
         console.error('Error fetching enrollment:', err);
         setError('Não foi possível carregar os detalhes da matrícula.');
@@ -58,9 +55,10 @@ const EnrollmentSuccessPage = () => {
     );
   }
 
-  const teacher = enrollment.expand?.teacher_id;
-  const student = enrollment.expand?.student_id;
-  const schedule = enrollment.expand?.schedule_id;
+  const teacher = enrollment.teacherId;
+  const student = enrollment.studentId;
+  const schedule = enrollment.scheduleId;
+  const studentName = student?.name || `${enrollment.firstName || ''} ${enrollment.lastName || ''}`.trim();
 
   const paymentMethodMap = {
     'pix': 'Pix',
@@ -97,7 +95,7 @@ const EnrollmentSuccessPage = () => {
                   <p className="text-sm text-muted-foreground flex items-center gap-2">
                     <User className="w-4 h-4" /> Aluno
                   </p>
-                  <p className="font-semibold text-foreground text-lg">{student?.name}</p>
+                  <p className="font-semibold text-foreground text-lg">{studentName}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground flex items-center gap-2">
@@ -113,10 +111,10 @@ const EnrollmentSuccessPage = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <p className="font-bold text-xl text-foreground capitalize">
-                    {statusToPtBR[schedule?.day_of_week] || schedule?.day_of_week}
+                    {statusToPtBR[schedule?.dayOfWeek] || schedule?.dayOfWeek}
                   </p>
                   <span className="inline-flex items-center px-3 py-1 rounded-lg bg-background border border-border font-medium">
-                    {schedule?.start_time} às {schedule?.end_time}
+                    {schedule?.startTime} às {schedule?.endTime}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
@@ -127,22 +125,22 @@ const EnrollmentSuccessPage = () => {
               <div className="border-t border-border pt-6 space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Valor Pago</span>
-                  <span className="font-bold text-xl">{formatCurrency(enrollment.amount)}</span>
+                  <span className="font-bold text-xl">{formatCurrency(enrollment.totalPrice)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground flex items-center gap-2">
                     <CreditCard className="w-4 h-4" /> Método
                   </span>
-                  <span className="font-medium">{paymentMethodMap[enrollment.payment_method] || enrollment.payment_method || 'N/A'}</span>
+                  <span className="font-medium">{paymentMethodMap[enrollment.paymentMethod] || enrollment.paymentMethod || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">ID da Transação</span>
-                  <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{enrollment.payment_id || 'N/A'}</span>
+                  <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{enrollment.paymentId || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Data</span>
                   <span className="font-medium">
-                    {new Date(enrollment.created).toLocaleDateString('pt-BR', {
+                    {new Date(enrollment.createdAt).toLocaleDateString('pt-BR', {
                       day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                     })}
                   </span>

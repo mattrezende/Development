@@ -8,7 +8,7 @@ import { Download, Plus } from 'lucide-react';
 
 import Header from '@/components/Header.jsx';
 import Sidebar from '@/components/Sidebar.jsx';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 
 import ExpenseForm from '@/components/financial/ExpenseForm.jsx';
@@ -40,15 +40,15 @@ const FinancialManagementPage = () => {
     if (!currentUser?.id) return;
     setIsLoading(true);
     try {
-      const [expensesRes, categoriesRes, enrollmentsRes] = await Promise.all([
-        pb.collection('expenses').getFullList({ filter: `teacher_id="${currentUser.id}"`, sort: '-date', $autoCancel: false }),
-        pb.collection('expense_categories').getFullList({ filter: `teacher_id="${currentUser.id}"`, sort: 'name', $autoCancel: false }),
-        pb.collection('enrollments').getFullList({ filter: `teacher_id="${currentUser.id}" && payment_status="approved"`, $autoCancel: false })
+      const [{ expenses }, { categories }, { enrollments }] = await Promise.all([
+        apiClient.get('/expenses'),
+        apiClient.get('/expense-categories'),
+        apiClient.get('/enrollments'),
       ]);
-      
-      setExpenses(expensesRes);
-      setCategories(categoriesRes);
-      setEnrollments(enrollmentsRes);
+
+      setExpenses(expenses);
+      setCategories(categories);
+      setEnrollments(enrollments.filter((e) => e.paymentStatus === 'approved'));
     } catch (error) {
       console.error('Error fetching financial data:', error);
       toast.error('Erro ao carregar dados financeiros.');
@@ -76,16 +76,16 @@ const FinancialManagementPage = () => {
   });
   
   const currentMonthEnrollments = enrollments.filter(e => {
-    const d = new Date(e.created);
+    const d = new Date(e.createdAt);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   });
 
   const totalExpenses = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-  const totalRevenue = currentMonthEnrollments.reduce((sum, e) => sum + (e.total_amount || e.amount || 0), 0);
+  const totalRevenue = currentMonthEnrollments.reduce((sum, e) => sum + (e.totalPrice || 0), 0);
   const netProfit = totalRevenue - totalExpenses;
 
   const expensesByCategoryMap = currentMonthExpenses.reduce((acc, e) => {
-    acc[e.category_id] = (acc[e.category_id] || 0) + e.amount;
+    acc[e.categoryId] = (acc[e.categoryId] || 0) + e.amount;
     return acc;
   }, {});
 
@@ -113,7 +113,7 @@ const FinancialManagementPage = () => {
 
   const expensesVsRevenue = last6Months.map(m => {
     const mExpenses = expenses.filter(e => new Date(e.date).getMonth() === m.month && new Date(e.date).getFullYear() === m.year).reduce((sum, e) => sum + e.amount, 0);
-    const mRevenue = enrollments.filter(e => new Date(e.created).getMonth() === m.month && new Date(e.created).getFullYear() === m.year).reduce((sum, e) => sum + (e.total_amount || e.amount || 0), 0);
+    const mRevenue = enrollments.filter(e => new Date(e.createdAt).getMonth() === m.month && new Date(e.createdAt).getFullYear() === m.year).reduce((sum, e) => sum + (e.totalPrice || 0), 0);
     return { month: m.label, expenses: mExpenses, revenue: mRevenue };
   });
 
@@ -122,10 +122,10 @@ const FinancialManagementPage = () => {
     setIsSubmittingExpense(true);
     try {
       if (editingExpense) {
-        await pb.collection('expenses').update(editingExpense.id, data, { $autoCancel: false });
+        await apiClient.patch(`/expenses/${editingExpense.id}`, data);
         toast.success('Despesa atualizada com sucesso!');
       } else {
-        await pb.collection('expenses').create({ ...data, teacher_id: currentUser.id }, { $autoCancel: false });
+        await apiClient.post('/expenses', data);
         toast.success('Despesa adicionada com sucesso!');
       }
       setIsExpenseModalOpen(false);
@@ -140,7 +140,7 @@ const FinancialManagementPage = () => {
   const handleDeleteExpense = async (id) => {
     if (!window.confirm('Tem certeza que deseja excluir esta despesa?')) return;
     try {
-      await pb.collection('expenses').delete(id, { $autoCancel: false });
+      await apiClient.delete(`/expenses/${id}`);
       toast.success('Despesa excluída.');
       fetchData();
     } catch (error) {
@@ -156,7 +156,7 @@ const FinancialManagementPage = () => {
   const handleDeleteCategory = async (id) => {
     if (!window.confirm('Tem certeza que deseja excluir esta categoria?')) return;
     try {
-      await pb.collection('expense_categories').delete(id, { $autoCancel: false });
+      await apiClient.delete(`/expense-categories/${id}`);
       toast.success('Categoria excluída.');
       fetchData();
     } catch (error) {

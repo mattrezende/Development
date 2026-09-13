@@ -5,7 +5,7 @@ import Header from '@/components/Header.jsx';
 import Sidebar from '@/components/Sidebar.jsx';
 import { Button } from '@/components/ui/button';
 import { Download, FileText, Table } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 import { exportToCSV, exportToPDF, exportToExcel } from '@/lib/exportUtils.js';
 import { formatCurrency } from '@/lib/i18n.js';
 import { 
@@ -27,26 +27,22 @@ const AnalyticsPage = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const enrollments = await pb.collection('enrollments').getFullList({
-          filter: `teacher_id="${currentUser.id}" && (payment_status="approved" || payment_status="completed")`,
-          $autoCancel: false,
-        });
+        const [{ enrollments: allEnrollments }, { students }] = await Promise.all([
+          apiClient.get('/enrollments'),
+          apiClient.get('/students'),
+        ]);
+        const enrollments = allEnrollments.filter((e) => e.paymentStatus === 'approved');
 
-        const students = await pb.collection('students').getFullList({
-          filter: `teacher_id="${currentUser.id}"`,
-          $autoCancel: false,
-        });
-
-        const totalRevenue = enrollments.reduce((sum, e) => sum + (e.amount || 0), 0);
+        const totalRevenue = enrollments.reduce((sum, e) => sum + (e.totalPrice || 0), 0);
         const avgRevenuePerStudent = students.length > 0 ? totalRevenue / students.length : 0;
-        
+
         const cancelledStudents = students.filter(s => s.status === 'cancelled').length;
         const churnRate = students.length > 0 ? (cancelledStudents / students.length) * 100 : 0;
 
         const methodCounts = {};
         enrollments.forEach(e => {
-          const method = e.payment_method || 'Outro';
-          methodCounts[method] = (methodCounts[method] || 0) + (e.amount || 0);
+          const method = e.paymentMethod || 'Outro';
+          methodCounts[method] = (methodCounts[method] || 0) + (e.totalPrice || 0);
         });
         
         const methodMap = { 'pix': 'Pix', 'credit_card': 'Crédito', 'debit_card': 'Débito', 'recurring': 'Recorrente', 'Outro': 'Outro' };
@@ -83,9 +79,9 @@ const AnalyticsPage = () => {
     if (!data.rawEnrollments) return;
     const exportData = data.rawEnrollments.map(e => ({
       ID: e.id,
-      Valor: e.amount,
-      Metodo: e.payment_method,
-      Data: new Date(e.created_at).toLocaleDateString()
+      Valor: e.totalPrice,
+      Metodo: e.paymentMethod,
+      Data: new Date(e.createdAt).toLocaleDateString()
     }));
     exportToCSV(exportData, 'analise_receita.csv');
   };

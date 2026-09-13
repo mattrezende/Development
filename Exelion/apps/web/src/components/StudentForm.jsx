@@ -3,17 +3,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import pb from '@/lib/pocketbaseClient';
-import { useAuth } from '@/contexts/AuthContext.jsx';
+import apiClient from '@/lib/apiClient';
 
 const StudentForm = ({ initialData, onSuccess, onCancel }) => {
-  const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    date_of_birth: '',
+    dateOfBirth: '',
   });
 
   useEffect(() => {
@@ -22,7 +20,7 @@ const StudentForm = ({ initialData, onSuccess, onCancel }) => {
         name: initialData.name || '',
         email: initialData.email || '',
         phone: initialData.phone || '',
-        date_of_birth: initialData.date_of_birth ? initialData.date_of_birth.split('T')[0] : '',
+        dateOfBirth: initialData.dateOfBirth ? initialData.dateOfBirth.split('T')[0] : '',
       });
     }
   }, [initialData]);
@@ -32,27 +30,20 @@ const StudentForm = ({ initialData, onSuccess, onCancel }) => {
     setLoading(true);
 
     try {
-      const dataToSave = {
-        ...formData,
-        teacher_id: currentUser.id,
-      };
+      const dataToSave = { ...formData };
 
-      // Convert empty date string to null to avoid PocketBase validation errors
-      if (!dataToSave.date_of_birth) {
-        delete dataToSave.date_of_birth;
-      } else {
-        // Ensure date is in correct format (YYYY-MM-DD 12:00:00.000Z)
-        dataToSave.date_of_birth = `${dataToSave.date_of_birth} 12:00:00.000Z`;
+      if (!dataToSave.dateOfBirth) {
+        delete dataToSave.dateOfBirth;
       }
 
       if (initialData?.id) {
-        await pb.collection('students').update(initialData.id, dataToSave, { $autoCancel: false });
+        await apiClient.patch(`/students/${initialData.id}`, dataToSave);
         toast.success('Aluno atualizado com sucesso!');
       } else {
-        await pb.collection('students').create(dataToSave, { $autoCancel: false });
+        await apiClient.post('/students', dataToSave);
         toast.success('Aluno cadastrado com sucesso!');
       }
-      
+
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error saving student:', error);
@@ -99,12 +90,12 @@ const StudentForm = ({ initialData, onSuccess, onCancel }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="date_of_birth">Data de Nascimento</Label>
+        <Label htmlFor="dateOfBirth">Data de Nascimento</Label>
         <Input
-          id="date_of_birth"
+          id="dateOfBirth"
           type="date"
-          value={formData.date_of_birth}
-          onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+          value={formData.dateOfBirth}
+          onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
         />
       </div>
 

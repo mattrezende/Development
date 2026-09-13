@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Search, Mail, Phone, CalendarDays, Plus, Edit2, Trash2 } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 import { formatDate } from '@/lib/i18n';
 import { toast } from 'sonner';
 import StudentForm from '@/components/StudentForm.jsx';
@@ -28,12 +28,8 @@ const StudentManagementPage = () => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const records = await pb.collection('students').getFullList({
-        filter: `teacher_id="${currentUser.id}"`,
-        sort: '-created_at',
-        $autoCancel: false
-      });
-      setStudents(records);
+      const { students } = await apiClient.get('/students');
+      setStudents(students);
     } catch (err) {
       console.error(err);
       toast.error('Erro ao carregar alunos.');
@@ -65,7 +61,7 @@ const StudentManagementPage = () => {
     if (!studentToDelete) return;
     
     try {
-      await pb.collection('students').delete(studentToDelete.id, { $autoCancel: false });
+      await apiClient.delete(`/students/${studentToDelete.id}`);
       toast.success('Aluno excluído com sucesso.');
       fetchStudents();
     } catch (error) {
@@ -166,12 +162,12 @@ const StudentManagementPage = () => {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
-                              {student.date_of_birth ? formatDate(student.date_of_birth) : 'N/A'}
+                              {student.dateOfBirth ? formatDate(student.dateOfBirth) : 'N/A'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-2 text-muted-foreground">
                                 <CalendarDays className="w-4 h-4" />
-                                {formatDate(student.created_at)}
+                                {formatDate(student.createdAt)}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right">

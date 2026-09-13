@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Save, Loader2, DollarSign } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient';
+import apiClient from '@/lib/apiClient';
 
 const PricingTablePage = () => {
   const { currentUser, updateProfile } = useAuth();
@@ -33,12 +33,10 @@ const PricingTablePage = () => {
   const fetchPricing = async () => {
     if (!currentUser) return;
     try {
-      setSingleLessonPrice(currentUser.single_lesson_price || '');
+      setSingleLessonPrice(currentUser.singleLessonPrice || '');
 
-      const records = await pb.collection('pricing').getFullList({
-        filter: `teacher_id="${currentUser.id}" && type="semanal"`,
-        $autoCancel: false,
-      });
+      const { pricing } = await apiClient.get('/pricing');
+      const records = pricing.filter((p) => p.type === 'semanal');
 
       const newPrices = {
         semanal: {
@@ -77,9 +75,7 @@ const PricingTablePage = () => {
       // Save single lesson price to teacher profile
       const singlePriceVal = parseFloat(singleLessonPrice);
       if (!isNaN(singlePriceVal) && singlePriceVal >= 0) {
-        const data = new FormData();
-        data.append('single_lesson_price', singlePriceVal);
-        await updateProfile(currentUser.id, data);
+        await updateProfile(currentUser.id, { singleLessonPrice: singlePriceVal });
       }
 
       // Save weekly prices
@@ -89,17 +85,16 @@ const PricingTablePage = () => {
         
         if (!isNaN(priceVal) && priceVal > 0) {
           if (item.id) {
-            await pb.collection('pricing').update(item.id, { price: priceVal }, { $autoCancel: false });
+            await apiClient.patch(`/pricing/${item.id}`, { price: priceVal });
           } else {
-            await pb.collection('pricing').create({
-              teacher_id: currentUser.id,
+            await apiClient.post('/pricing', {
               type: 'semanal',
               quantity: q,
               price: priceVal
-            }, { $autoCancel: false });
+            });
           }
         } else if (item.id && (item.price === '' || isNaN(priceVal) || priceVal <= 0)) {
-          await pb.collection('pricing').delete(item.id, { $autoCancel: false });
+          await apiClient.delete(`/pricing/${item.id}`);
         }
       }
       
