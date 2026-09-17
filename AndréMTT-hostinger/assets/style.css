@@ -1,0 +1,95 @@
+html,body{margin:0;background:#0a0a0b;}
+a{color:#E8127C;}
+a:hover{color:#FF5CA8;}
+::selection{background:#E8127C;color:#fff;}
+
+/* hover states (extracted from the original style-hover attributes) */
+.hv-brighten{transition:filter .2s ease,box-shadow .2s ease;}
+.hv-brighten:hover{filter:brightness(1.12);box-shadow:0 0 16px rgba(232,18,124,0.75),0 0 40px rgba(232,18,124,0.4);}
+.hv-lift{transition:transform .2s ease,box-shadow .2s ease;}
+.hv-lift:hover{transform:translateY(-2px);box-shadow:0 0 16px rgba(232,18,124,0.55),0 0 36px rgba(232,18,124,0.3);}
+.hv-outline{transition:border-color .2s ease,color .2s ease,box-shadow .2s ease;}
+.hv-outline:hover{border-color:#E8127C;color:#E8127C;box-shadow:0 0 14px rgba(232,18,124,0.45);}
+.hv-ghost:hover{background:rgba(255,255,255,0.12);}
+.hv-link:hover{color:#E8127C;}
+.hv-border{transition:border-color .2s ease,box-shadow .2s ease;}
+.hv-border:hover{border-color:#E8127C;box-shadow:0 0 14px rgba(232,18,124,0.4);}
+.hv-navlink:hover{color:#fff;background:rgba(232,18,124,0.14);}
+.hv-chip{transition:border-color .2s ease,color .2s ease,box-shadow .2s ease;}
+.hv-chip:hover{border-color:#E8127C;color:#fff;box-shadow:0 0 12px rgba(232,18,124,0.4);}
+
+/* scroll reveal (cards fade/slide in as they enter the viewport) */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.16,.8,.3,1),transform .7s cubic-bezier(.16,.8,.3,1);}
+.reveal.is-visible{opacity:1;transform:translateY(0);}
+.reveal:nth-child(2){transition-delay:.08s;}
+.reveal:nth-child(3){transition-delay:.16s;}
+.reveal:nth-child(4){transition-delay:.24s;}
+.reveal:nth-child(5){transition-delay:.32s;}
+.reveal:nth-child(6){transition-delay:.4s;}
+@media (prefers-reduced-motion: reduce){
+  .reveal{opacity:1;transform:none;transition:none;}
+}
+
+/* pink neon hover glow for cards */
+.card-neon{transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;}
+.card-neon:hover{transform:translateY(-6px);border-color:#E8127C;box-shadow:0 0 0 1px rgba(232,18,124,0.55),0 0 22px rgba(232,18,124,0.55),0 0 48px rgba(232,18,124,0.28);}
+
+/* header */
+@media (max-width: 920px){
+  header [data-desktop-nav]{ display:none !important; }
+  header [data-burger]{ display:inline-flex !important; }
+}
+.mobile-nav{display:none;}
+.mobile-nav.is-open{display:flex;}
+
+/* footer */
+@media (max-width:820px){
+  footer [data-fcols]{grid-template-columns:1fr !important;gap:32px !important;}
+}
+
+/* home */
+@media (max-width:900px){
+  .hm-hero{grid-template-columns:1fr !important;}
+  .hm-hero-media{min-height:340px !important;order:-1;}
+  .hm-h1{font-size:clamp(46px,13vw,72px) !important;}
+  .hm-grid3{grid-template-columns:1fr !important;}
+  .hm-grid2{grid-template-columns:1fr !important;}
+  .hm-vids{grid-template-columns:1fr !important;}
+}
+
+/* contato */
+.ct-input{width:100%;box-sizing:border-box;background:#0e0e10;border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:14px 16px;color:#fff;font-family:'Barlow',sans-serif;font-size:16px;outline:none;transition:border-color .15s;}
+.ct-input::placeholder{color:#9f9fa4;}
+.ct-input:focus{border-color:#E8127C;}
+select.ct-input{appearance:none;cursor:pointer;}
+@media (max-width:900px){
+  .ct-h1{font-size:clamp(42px,12vw,64px) !important;}
+  .ct-split{grid-template-columns:1fr !important;}
+}
+
+/* modelos */
+@media (max-width:900px){
+  .md-h1{font-size:clamp(42px,12vw,64px) !important;}
+  .md-split{grid-template-columns:1fr !important;}
+  .md-pkgs{grid-template-columns:1fr 1fr !important;}
+  .md-calc{grid-template-columns:1fr !important;}
+  .sg-open{grid-template-columns:1fr !important;}
+}
+@media (max-width:560px){
+  .md-pkgs{grid-template-columns:1fr !important;}
+}
+
+/* depoimentos */
+@media (max-width:900px){
+  .dp-h1{font-size:clamp(42px,12vw,64px) !important;}
+  .dp-grid{grid-template-columns:1fr !important;}
+  .dp-stats{grid-template-columns:1fr 1fr !important;}
+}
+
+/* personal-fight */
+@media (max-width:900px){
+  .pf-split{grid-template-columns:1fr !important;}
+  .pf-grid3{grid-template-columns:1fr !important;}
+  .pf-h1{font-size:clamp(42px,12vw,64px) !important;}
+  .pf-about-media{min-height:320px !important;}
+}

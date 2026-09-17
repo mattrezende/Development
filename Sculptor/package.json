@@ -1,0 +1,30 @@
+{
+  "name": "sculptor",
+  "version": "0.2.0",
+  "description": "MVP de modelador 3D desktop inspirado no SketchUp",
+  "main": "dist/main/main.js",
+  "private": true,
+  "scripts": {
+    "dev:renderer": "vite",
+    "dev:main": "tsc -p tsconfig.main.json -w",
+    "dev": "concurrently -k -n RENDERER,MAIN,ELECTRON \"npm:dev:renderer\" \"npm:dev:main\" \"wait-on tcp:5173 dist/main/main.js && electron .\"",
+    "build:renderer": "vite build",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build": "npm run build:main && npm run build:renderer",
+    "test": "vitest run",
+    "dist": "npm run build && electron-builder --win"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/three": "^0.171.0",
+    "concurrently": "^9.1.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "playwright-core": "^1.61.1",
+    "three": "^0.171.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8",
+    "wait-on": "^8.0.1"
+  }
+}

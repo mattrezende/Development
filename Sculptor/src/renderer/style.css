@@ -1,0 +1,87 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+  background: #1e1e1e;
+  color: #ddd;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  background: #2a2a2a;
+  border-bottom: 1px solid #000;
+}
+
+#toolbar button {
+  background: #3a3a3a;
+  color: #ddd;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+#toolbar button:hover {
+  background: #4a4a4a;
+}
+
+#toolbar button.active {
+  background: #0e639c;
+  border-color: #1177bb;
+}
+
+#viewport-container {
+  flex: 1;
+  position: relative;
+}
+
+#viewport-container canvas {
+  display: block;
+}
+
+#status-bar {
+  padding: 4px 8px;
+  background: #2a2a2a;
+  border-top: 1px solid #000;
+  font-size: 12px;
+  color: #aaa;
+}
+
+#dimension-input {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  min-width: 90px;
+  padding: 6px 10px;
+  background: #202020ee;
+  border: 1px solid #ffaa00;
+  border-radius: 4px;
+  color: #ffaa00;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 14px;
+  text-align: right;
+  pointer-events: none;
+}
+
+#dimension-input.hidden {
+  display: none;
+}
+
+#toolbar select {
+  background: #3a3a3a;
+  color: #ddd;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 13px;
+}

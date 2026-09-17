@@ -1,0 +1,41 @@
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contador</title>
+
+        <style>
+            body {
+            
+            }
+            h1 {
+                font-size: 50px;
+                color: black;
+            }   
+        </style>
+
+    </head>
+
+    <body>
+        <h1>Bem vindo ao relógio digital</h1>
+        <br><br>
+
+        <h2 id="contador">00:00:00:00</h2>
+
+        <script>
+            setInterval(() => {
+                const contador = document.getElementById('contador');
+                const agora = new Date();
+                const horas = String(agora.getHours()).padStart(2, '0');
+                const minutos = String(agora.getMinutes()).padStart(2, '0');
+                const segundos = String(agora.getSeconds()).padStart(2, '0');
+                const milesimos = String(Math.floor(agora.getMilliseconds() / 10)).padStart(2, '0');
+                contador.textContent = `${horas}:${minutos}:${segundos}:${milesimos}`;
+            }, 10);
+        </script>
+
+    </body>
+
+    </html>
